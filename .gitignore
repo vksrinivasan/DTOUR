@@ -1,6 +1,6 @@
 # Project files
-data/*.zip
-data/*.csv
+data/*
+.idea/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
