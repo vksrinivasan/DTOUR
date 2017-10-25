@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script type="text/javascript" src="/javascript/jquery.js"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHQZoJ1IkC36Hm9-nkdyE7wj8vjS3ZcC4&callback=initMap" async defer></script>
+
+		<title>DVA Project :P</title>
+		<meta name="viewport" content="initial-scale=1.0"><!--  , user-scalable=no -->
+		<meta charset="utf-8">
+		<style>
+			/* Always set the map height explicitly to define the size of the div
+			 * element that contains the map. */
+			#map {
+				height: 100%;
+				width: 100%;
+			}
+			/* Optional: Makes the sample page fill the window. */
+			html, body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="map"></div>
+		<script>
+			/*
+			1) search for destination
+			2) current location and centering the map according to that
+			3) 
+			end) navitation/directions for the end
+			*/
+
+			var map = null;
+
+			function initMap() {
+				var ny_center = new google.maps.LatLng(40.730610, -73.935242);
+				var my_home = new google.maps.LatLng(33.782115, -84.406469);
+
+				var gatech = new google.maps.LatLng(33.778423, -84.401361);
+				var dest = new google.maps.LatLng(33.781437, -84.386941);
+				var dest2 = new google.maps.LatLng(33.772245, -84.384906);
+
+				var directionsService = new google.maps.DirectionsService();
+				var markerImage = 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png';
+
+				var mapOptions = {
+					center: gatech,
+					zoom: 16,
+					mapTypeId: google.maps.MapTypeId.ROADMAP
+					// 1: World
+					// 5: Landmass/continent
+					// 10: City
+					// 15: Streets
+					// 20: Buildings
+				}
+
+				map = new google.maps.Map(document.getElementById('map'), mapOptions);
+
+				var markerAttrs = {
+					/*coords can also be 
+					coords: {lat: my_home.lat(), lng: my_home.lng()},*/
+					coords: new google.maps.LatLng(gatech.lat(), gatech.lng()),
+					iconImage: markerImage,
+					content: "<h3>Your next step to your destination</h3>"
+				}
+
+				var marker = addMarker(markerAttrs, map);
+				calcRoute();
+
+				function addMarker(attrs_, map_) {
+					/*adding a marker
+					attrs is an object of this format:
+					var attrs = {
+						coords: {lat: 11, lng: 22},
+						iconImage: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'
+					}
+					var marker = addMarker(attrs, map);*/
+
+					var newMarker = new google.maps.Marker( {
+						// position: new google.maps.LatLng(lat_, lng_),
+						position: attrs_["coords"],
+						map: map_,
+						icon: attrs_["iconImage"]
+					} );
+
+					if (attrs_["content"]) {
+						var newInfoWindow = new google.maps.InfoWindow({
+							content: attrs_["content"]
+						});
+
+						google.maps.event.addListener(newMarker, "click", () => {
+							newInfoWindow.open(map_, newMarker);
+						})
+					}
+
+					newMarker.setMap(map_);
+					return newMarker;
+				}
+
+				function calcRoute() {
+					var request2 = {
+						origin: dest,
+						destination: dest2,
+						travelMode: google.maps.TravelMode["DRIVING"]
+					};
+					directionsService.route(request2, (response, status) => {
+						if (status == 'OK') {
+							var directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true, suppressMarkers: true, polylineOptions: {strokeColor: "blue"} });
+							directionsDisplay.setMap(map);
+							directionsDisplay.setDirections(response);
+						}
+					});
+
+					var request = {
+						origin: gatech,
+						destination: dest,
+						travelMode: google.maps.TravelMode["DRIVING"]
+					};
+					directionsService.route(request, (response, status) => {
+						if (status == 'OK') {
+							var directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true, suppressMarkers: true, polylineOptions: {strokeColor: "red"} });
+							directionsDisplay.setMap(map);
+							directionsDisplay.setDirections(response);
+						}
+					});
+				}
+
+				function disp(a_) {
+					console.log(a_);
+				}
+
+				{
+					// function addLine(coords_, map_) {
+					// 	/*adding a simple line
+					// 	coords_ is in the form of lat1, lng1, lat2, lng2, lat3, lng3 ...
+					// 	sample call:
+
+					// 	var my_home = new google.maps.LatLng(33.782115, -84.406469);
+					// 	addLine([my_home.lat(), my_home.lng(), my_home.lat(), my_home.lng()+0.003, my_home.lat(), my_home.lng()+0.006], map);*/
+
+					// 	objectsArray = [];
+					// 	for (var i = 0; i < coords_.length; i=i+2) {
+					// 		objectsArray.push({lat: coords_[i], lng: coords_[i+1]});
+					// 	}
+
+					// 	var line = new google.maps.Polyline({
+					// 		path: objectsArray,
+					// 		geodesic: true,
+					// 		strokeColor: '#FF0000',
+					// 		strokeOpacity: 1.0,
+					// 		strokeWeight: 2
+					// 	});
+
+					// 	line.setMap(map_);
+					// }
+				}
+			}
+		</script>
+	</body>
+</html>
