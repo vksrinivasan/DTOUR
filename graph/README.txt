@@ -15,8 +15,9 @@ adj_edges
 
 transition_graphs
     id - primary key
-    dt_start - text representing start date of graph
-    dt_end - text representing end date of graph
+    name
+    month - month that this corresponds to
+    taxi_type - e.g. 'yellow', 'green'
     interval_start - integer corresponding to minutes of start interval, e.g. 780 for 1pm
     interval_end - same as above except for end time
 
@@ -25,3 +26,4 @@ transition_edges
     transition_graph_id - references transition_graph
     source_node_id - references node
     dest_node_id - references node
+    weight - integer weight
