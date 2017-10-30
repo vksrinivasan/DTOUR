@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS adj_edges(id INTEGER PRIMARY KEY,
 	FOREIGN KEY(dest_node_id) REFERENCES nodes(id));
 
 CREATE TABLE IF NOT EXISTS transition_graphs(id INTEGER PRIMARY KEY, 
-	name TEXT UNIQUE, month INTEGER, taxi_type TEXT,
+	name TEXT UNIQUE, month INTEGER, year INTEGER, taxi_type TEXT,
 	interval_start INTEGER, interval_end INTEGER);
 
 CREATE TABLE IF NOT EXISTS transition_edges(id INTEGER PRIMARY KEY,

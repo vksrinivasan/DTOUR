@@ -57,7 +57,7 @@ def generate_trip_graph(data_file, quantizer, interval_start, interval_end):
                     pu_dist = pu_dist * 6371 * math.pi /180  # Angle to km
                     do_dist = do_dist * 6371 * math.pi / 180  # Angle to km
 
-                    if pu_dist <= NEAREST_NODE_TOLERANCE and do_dist <= NEAREST_NODE_TOLERANCE:
+                    if pu_dist <= NEAREST_NODE_TOLERANCE and do_dist <= NEAREST_NODE_TOLERANCE and pu_node != do_node:
                         trip_graph[pu_node.index, do_node.index] += 1
                 except ValueError:
                     continue
@@ -104,6 +104,13 @@ if __name__ == '__main__':
             sys.stderr.write('Could not parse month from {}\n'.format(data_file_name))
 
         try:
+            match = re.search(r'(\d{4})-', data_file_name)
+            year = int(match.group(1))
+        except (ValueError, AttributeError):
+            year = 0
+            sys.stderr.write('Could not parse year from {}\n'.format(data_file_name))
+
+        try:
             match = re.search(r'^(.+?)_', data_file_name)
             taxi_type = match.group(1)
         except AttributeError:
@@ -114,12 +121,12 @@ if __name__ == '__main__':
         interval_end = int(hour2)*60 + int(minute2)
         graph_name = '{}_{}_{}'.format(os.path.splitext(data_file_name)[0], interval_start, interval_end)
 
-        transition_graph_row = (graph_name, month, taxi_type, interval_start, interval_end)
+        transition_graph_row = (graph_name, month, year, taxi_type, interval_start, interval_end)
         with sqlite3.connect(graph_db) as conn:
             conn.execute('PRAGMA foreign_keys = ON')
-            conn.execute('INSERT INTO transition_graphs (name, month, taxi_type, '
+            conn.execute('INSERT INTO transition_graphs (name, month, year, taxi_type, '
                          'interval_start, interval_end) '
-                         'values (?,?,?,?,?)', transition_graph_row)
+                         'values (?,?,?,?,?,?)', transition_graph_row)
 
             cursor = conn.execute('SELECT id from transition_graphs WHERE name=\'{}\''.format(graph_name))
             transition_graph_id = next(cursor)[0]

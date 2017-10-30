@@ -17,6 +17,7 @@ transition_graphs
     id - primary key
     name
     month - month that this corresponds to
+    year - year that data corresponds to
     taxi_type - e.g. 'yellow', 'green'
     interval_start - integer corresponding to minutes of start interval, e.g. 780 for 1pm
     interval_end - same as above except for end time
