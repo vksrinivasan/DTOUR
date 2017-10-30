@@ -1,6 +1,6 @@
 # Usage
-# python generate_graph.py <INERVAL_START> <INTERVAL_END> <DATA_DIR> <OUTPUT_DIR>
-# Example: python generate_graph.py 06:00 07:00 ../../data/nyc_gov_trip_data/ ../../graph/
+# python generate_transition_graph.py <INERVAL_START> <INTERVAL_END> <DATA_DIR> <OUTPUT_DIR>
+# Example: python generate_transition_graph.py 06:00 07:00 ../../data/nyc_gov_trip_data/ ../../graph/
 
 from quantization import Quantizer
 import sys
