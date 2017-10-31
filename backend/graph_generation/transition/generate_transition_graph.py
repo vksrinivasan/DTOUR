@@ -153,7 +153,8 @@ if __name__ == '__main__':
     for data_file in data_files:
         data_file_name = os.path.split(data_file)[1]
 
-        sc = SparkContext("local", "Transition Graph")
+        script_dir = os.path.split(os.path.realpath(__file__))[0]
+        sc = SparkContext("local", "Transition Graph", pyFiles=[os.path.join(script_dir, 'quantization.py')])
         taxi_data = sc.textFile(data_file) \
             .map(lambda row: row.split(',')) \
             .filter(lambda row: len(row) > 1)
