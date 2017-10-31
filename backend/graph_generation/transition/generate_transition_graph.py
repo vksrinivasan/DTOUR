@@ -32,7 +32,7 @@ def map_row(row, pu_time_index, interval_length):
         pu_date = dateutil.parser.parse(row[pu_time_index])
         pu_minutes = 60*pu_date.time().hour + pu_date.time().minute
         return int(pu_minutes/interval_length), row
-    except ValueError, IndexError:
+    except (ValueError, IndexError):
         return None
 
 
@@ -62,7 +62,7 @@ def generate_trip_graph(entry, header, graph_db):
 
             if pu_dist <= NEAREST_NODE_TOLERANCE and do_dist <= NEAREST_NODE_TOLERANCE and pu_node != do_node:
                 trip_graph[pu_node.index, do_node.index] += 1
-        except ValueError, IndexError:
+        except (ValueError, IndexError):
             continue
 
 
@@ -105,17 +105,6 @@ def write_trip_graph(entry, data_file_name, graph_db):
 
     transition_graph_row = (graph_name, month, year, taxi_type, interval_start, interval_end)
 
-    with sqlite3.connect(graph_db) as conn:
-        conn.execute('PRAGMA foreign_keys = ON')
-        conn.execute('INSERT INTO transition_graphs (name, month, year, taxi_type, '
-                     'interval_start, interval_end) '
-                     'values (?,?,?,?,?,?)', transition_graph_row)
-
-        cursor = conn.execute('SELECT id from transition_graphs WHERE name=\'{}\''.format(graph_name))
-        transition_graph_id = next(cursor)[0]
-
-        conn.commit()
-
     # list of (transition_graph_id, source_node_id, dest_node_id, weight)
     l_edges = []
 
@@ -125,15 +114,30 @@ def write_trip_graph(entry, data_file_name, graph_db):
             src_node_id = quantizer.nodes[source_index].db_id
             dest_node_id = quantizer.nodes[dest_index].db_id
             if weight > 0:
-                l_edges.append((transition_graph_id, src_node_id, dest_node_id, weight))
+                l_edges.append((src_node_id, dest_node_id, weight))
 
-    with sqlite3.connect(graph_db) as conn:
-        conn.execute('PRAGMA foreign_keys = ON')
-        conn.executemany('INSERT INTO transition_edges (transition_graph_id, '
-                         'source_node_id, dest_node_id, weight)'
-                         'values (?,?,?,?)', l_edges)
+    try:
+        with sqlite3.connect(graph_db) as conn:
+            conn.execute('PRAGMA foreign_keys = ON')
+            conn.execute('INSERT INTO transition_graphs (name, month, year, taxi_type, '
+                         'interval_start, interval_end) '
+                         'values (?,?,?,?,?,?)', transition_graph_row)
 
-        conn.commit()
+            cursor = conn.execute('SELECT id from transition_graphs WHERE name=\'{}\''.format(graph_name))
+            transition_graph_id = next(cursor)[0]
+
+            l_edges = [(transition_graph_id,) + edge for edge in l_edges]
+
+            conn.execute('PRAGMA foreign_keys = ON')
+            conn.executemany('INSERT INTO transition_edges (transition_graph_id, '
+                             'source_node_id, dest_node_id, weight)'
+                             'values (?,?,?,?)', l_edges)
+
+            conn.commit()
+    except sqlite3.IntegrityError:
+        import traceback
+        sys.stderr.write('Error when  writing graph {}:\n{}\n'.format(graph_name, traceback.format_exc()))
+
 
 
 if __name__ == '__main__':

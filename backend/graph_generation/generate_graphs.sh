@@ -14,9 +14,9 @@ if [ ! -f $DB_FILE ]; then
 fi
 
 mkdir -p $LOG_DIR
-for year in {2014..2014}
+for year in {2014..2015}
 do
-	for month in `seq -f "%02g" 1 3`
+	for month in `seq -f "%02g" 1 12`
 	do
 		DATA_NAME="yellow_tripdata_$year-$month"
 		LOG_DATA_FILE="$LOG_DIR/$DATA_NAME.txt"
