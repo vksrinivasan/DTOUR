@@ -66,15 +66,15 @@ public class StaticData_Implement implements DataSource {
         return;
     }
 
-    public static void main(String[] args) {
-        StaticData_Implement mytest = new StaticData_Implement();
-        int data_size = mytest.neighborList.size();
-        for(int i = 0; i < data_size; i++) {
-            System.out.print(Integer.toString(i) + ": ");
-            for(int j = 0; j < mytest.neighborList.get(i).size(); j++) {
-                System.out.print("(" + mytest.neighborList.get(i).get(j) + ", " + mytest.weightList.get(i).get(j) +"), ");
-            }
-            System.out.println();
-        }
-    }
+//    public static void main(String[] args) {
+//        StaticData_Implement mytest = new StaticData_Implement();
+//        int data_size = mytest.neighborList.size();
+//        for(int i = 0; i < data_size; i++) {
+//            System.out.print(Integer.toString(i) + ": ");
+//            for(int j = 0; j < mytest.neighborList.get(i).size(); j++) {
+//                System.out.print("(" + mytest.neighborList.get(i).get(j) + ", " + mytest.weightList.get(i).get(j) +"), ");
+//            }
+//            System.out.println();
+//        }
+//    }
 }
