@@ -1,15 +1,17 @@
 # Usage
-# python generate_transition_graph.py <INERVAL_LENGTH (in minutes)> <DATA_DIR> <OUTPUT_DIR>
+# python generate_transition_graph.py <INTERVAL_LENGTH (in minutes)> <DATA_DIR> <OUTPUT_DIR>
 # Example: python generate_transition_graph.py 60 ../../data/nyc_gov_trip_data/ ../../graph/
 
-from quantization import Quantizer
-import sys
-import numpy as np
-import os
 import math
-import sqlite3
+import os
 import re
-from pyspark import SparkConf, SparkContext
+import sys
+
+import MySQLdb
+import numpy as np
+from pyspark import SparkContext
+
+from quantization import Quantizer
 
 # Outline
 # main function: reads csv
@@ -31,8 +33,8 @@ def map_row(row, pu_time_index, interval_length):
         return None
 
 
-def generate_trip_graph(entry, header, graph_db):
-    quantizer = Quantizer(graph_db)
+def generate_trip_graph(entry, header, connector):
+    quantizer = Quantizer(connector)
     trip_graph = np.zeros((quantizer.num_nodes(), quantizer.num_nodes()), dtype=np.int)
 
     pu_lat_index = header.index('pickup_latitude')
@@ -64,11 +66,11 @@ def generate_trip_graph(entry, header, graph_db):
     return key, trip_graph
 
 
-def write_trip_graph(entry, transition_group_id, interval_length, graph_db):
+def write_trip_graph(entry, transition_group_id, interval_length, connector):
     interval_index = entry[0]
     trip_graph = entry[1]
 
-    quantizer = Quantizer(graph_db)
+    quantizer = Quantizer(connector)
     # outbound_degrees = trip_graph.sum(axis = 1)
     # transition_probabilities = trip_graph.astype(np.float) / outbound_degrees[:, np.newaxis]
     # transition_probabilities = np.nan_to_num(transition_probabilities) # Replace nans with 0's
@@ -90,27 +92,26 @@ def write_trip_graph(entry, transition_group_id, interval_length, graph_db):
                 l_edges.append((src_node_id, dest_node_id, weight))
 
     try:
-        with sqlite3.connect(graph_db) as conn:
-            conn.execute('PRAGMA foreign_keys = ON')
-
-            transition_graph_id = conn.execute('INSERT INTO transition_graph (transition_group_id, interval_start, interval_end) '
-                         'values (?,?,?)', transition_graph_row).lastrowid
+        with connector.open() as conn:
+            cursor = conn.cursor()
+            cursor.execute('INSERT INTO transition_graph (transition_group_id, interval_start, interval_end) '
+                         'values (%s,%s,%s)', transition_graph_row)
+            transition_graph_id = cursor.lastrowid
 
             l_edges = [(transition_graph_id,) + edge for edge in l_edges]
 
-            conn.execute('PRAGMA foreign_keys = ON')
-            conn.executemany('INSERT INTO transition_edge (transition_graph_id, '
+            cursor.executemany('INSERT INTO transition_edge (transition_graph_id, '
                              'src_node_id, dest_node_id, weight)'
-                             'values (?,?,?,?)', l_edges)
+                             'values (%s,%s,%s,%s)', l_edges)
 
             conn.commit()
-    except (sqlite3.IntegrityError, ValueError):
+    except (MySQLdb.IntegrityError, ValueError):
         import traceback
         sys.stderr.write('Error when writing graph to transition group {} for interval {} to {}:\n{}\n'
                          .format(transition_group_id, interval_start, interval_end, traceback.format_exc()))
 
 
-def _get_transition_group_id(transition_group_name):
+def _get_transition_group_id(transition_group_name, connector):
     match = re.search(r'-(\d\d)(?!d)', transition_group_name)
     month = int(match.group(1))
 
@@ -120,21 +121,23 @@ def _get_transition_group_id(transition_group_name):
     match = re.search(r'^(.+?)_', transition_group_name)
     taxi_type = match.group(1)
 
-    with sqlite3.connect(graph_db) as conn:
-        conn.execute('PRAGMA foreign_keys = ON')
+    with connector.open() as conn:
+        cursor = conn.cursor()
 
-        cursor = conn.execute('SELECT id from transition_group where name=?', (transition_group_name,))
+        cursor.execute('SELECT id from transition_group where name=%s', (transition_group_name,))
         result = cursor.fetchone()
 
         if result is None:
-            transition_group_id = conn.execute('INSERT into transition_group (name) VALUES (?)', (transition_group_name,)).lastrowid
-            transition_period_id = conn.execute(
-                'INSERT INTO transition_period (transition_group_id, month, year, taxi_type) VALUES (?,?,?,?)',
-                (transition_group_id, month, year, taxi_type)).lastrowid
+            cursor.execute('INSERT into transition_group (name) VALUES (%s)', (transition_group_name,))
+            transition_group_id = cursor.lastrowid
+            cursor.execute(
+                'INSERT INTO transition_period (transition_group_id, month, year, taxi_type) VALUES (%s,%s,%s,%s)',
+                (transition_group_id, month, year, taxi_type))
+            transition_period_id = cursor.lastrowid
         else:
             transition_group_id = result[0]
-            cursor = conn.execute('SELECT id, month, year, taxi_type '
-                                  'from transition_period where transition_group_id=?', (transition_group_id,))
+            cursor.execute('SELECT id, month, year, taxi_type '
+                                  'from transition_period where transition_group_id=%s', (transition_group_id,))
             results = cursor.fetchall()
             if (len(results) != 1):
                 raise ValueError(
@@ -150,6 +153,8 @@ def _get_transition_group_id(transition_group_name):
 
 
 if __name__ == '__main__':
+    from graph_generation.mysql_util import Connector
+
     interval_length = int(sys.argv[1])
 
     data_path = sys.argv[2]
@@ -161,14 +166,19 @@ if __name__ == '__main__':
     else:
         raise ValueError('{} is not a valid file path'.format(data_path))
 
-    graph_db = sys.argv[3]
+
+    script_dir = os.path.split(os.path.realpath(__file__))[0]
+    pyFiles = [os.path.join(script_dir, py_file) for py_file in ['quantization.py']]
+
+    connector = Connector(os.path.join(script_dir, '../credentials.txt'))
+    quantizer = Quantizer(connector)
 
     for data_file in data_files:
-        transition_group_name = os.path.split(data_file)[1]
-        transition_group_id = _get_transition_group_id(transition_group_name)
+        transition_file_name = os.path.split(data_file)[1]
+        transition_group_name = os.path.splitext(transition_file_name)[0]
 
-        script_dir = os.path.split(os.path.realpath(__file__))[0]
-        pyFiles = [os.path.join(script_dir, py_file) for py_file in ['quantization.py']]
+        transition_group_id = _get_transition_group_id(transition_group_name, connector)
+
         sc = SparkContext("local", "Transition Graph", pyFiles=pyFiles)
         taxi_data = sc.textFile(data_file) \
             .map(lambda row: row.split(',')) \
@@ -186,6 +196,6 @@ if __name__ == '__main__':
             .map(lambda row: map_row(row, pu_time_index, interval_length)) \
             .filter(lambda row: row is not None) \
             .groupByKey() \
-            .map(lambda entry: generate_trip_graph(entry, header, graph_db)) \
-            .map(lambda entry: write_trip_graph(entry, transition_group_id, interval_length, graph_db)) \
+            .map(lambda entry: generate_trip_graph(entry, header, connector)) \
+            .map(lambda entry: write_trip_graph(entry, transition_group_id, interval_length, connector)) \
             .collect()

@@ -4,15 +4,16 @@ import sqlite3
 import collections
 
 class Quantizer():
-    def __init__(self, db_file_name):
-        self.__load_file(db_file_name)
+    def __init__(self, connector):
+        self.__load_nodes(connector)
         self.__build_tree()
 
 
-    def __load_file(self, db_file_name):
-        with sqlite3.connect(db_file_name) as conn:
-            cursor = conn.execute("SELECT id, name, latitude, longitude from node ORDER by id ASC")
-            self.nodes = [Node(*row, index=i) for i, row in enumerate(cursor)]
+    def __load_nodes(self, connector):
+        with connector.open() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, name, latitude, longitude from node ORDER by id ASC")
+            self.nodes = [Node(*row, index=i) for i, row in enumerate(cursor.fetchall())]
             cursor.close()
 
             conn.commit()
