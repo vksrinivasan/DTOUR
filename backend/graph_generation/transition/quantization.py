@@ -11,7 +11,7 @@ class Quantizer():
 
     def __load_file(self, db_file_name):
         with sqlite3.connect(db_file_name) as conn:
-            cursor = conn.execute("SELECT id, name, latitude, longitude from nodes ORDER by id ASC")
+            cursor = conn.execute("SELECT id, name, latitude, longitude from node ORDER by id ASC")
             self.nodes = [Node(*row, index=i) for i, row in enumerate(cursor)]
             cursor.close()
 

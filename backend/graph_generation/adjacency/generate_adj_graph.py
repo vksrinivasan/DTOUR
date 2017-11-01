@@ -30,9 +30,9 @@ if __name__ == '__main__':
 
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute('PRAGMA foreign_keys = ON')
-        conn.executemany('INSERT INTO nodes (name, latitude, longitude) values (?,?,?)', node_rows)
+        selected = conn.executemany('INSERT INTO node (name, latitude, longitude) values (?,?,?)', node_rows)
 
-        cursor = conn.execute("SELECT id, name from nodes")
+        cursor = conn.execute("SELECT id, name from node")
         for row in cursor:
             node_name_to_id[row[1]] = row[0]
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute('PRAGMA foreign_keys = ON')
-        conn.executemany('INSERT INTO adj_edges (source_node_id, dest_node_id) values (?,?)', adj_rows)
+        conn.executemany('INSERT INTO adj_edge (src_node_id, dest_node_id) values (?,?)', adj_rows)
 
         conn.commit()
 

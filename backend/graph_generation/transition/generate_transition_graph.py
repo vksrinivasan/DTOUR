@@ -4,13 +4,8 @@
 
 from quantization import Quantizer
 import sys
-import datetime as dt
-import dateutil.parser
-import csv
 import numpy as np
-import json
 import os
-import errno
 import math
 import sqlite3
 import re
@@ -69,28 +64,7 @@ def generate_trip_graph(entry, header, graph_db):
     return key, trip_graph
 
 
-def write_trip_graph(entry, data_file_name, graph_db):
-    try:
-        match = re.search(r'-(\d\d)(?!d)', data_file_name)
-        month = int(match.group(1))
-    except (ValueError, AttributeError):
-        month = 0
-        sys.stderr.write('Could not parse month from {}\n'.format(data_file_name))
-
-    try:
-        match = re.search(r'(\d{4})-', data_file_name)
-        year = int(match.group(1))
-    except (ValueError, AttributeError):
-        year = 0
-        sys.stderr.write('Could not parse year from {}\n'.format(data_file_name))
-
-    try:
-        match = re.search(r'^(.+?)_', data_file_name)
-        taxi_type = match.group(1)
-    except AttributeError:
-        taxi_type = None
-        sys.stderr.write('Could not parse taxi type from {}\n'.format(data_file_name))
-
+def write_trip_graph(entry, transition_group_id, interval_length, graph_db):
     interval_index = entry[0]
     trip_graph = entry[1]
 
@@ -101,9 +75,8 @@ def write_trip_graph(entry, data_file_name, graph_db):
 
     interval_start = interval_index * interval_length
     interval_end = min((interval_index + 1) * interval_length, 24 * 60)
-    graph_name = '{}_{}_{}'.format(os.path.splitext(data_file_name)[0], interval_start, interval_end)
 
-    transition_graph_row = (graph_name, month, year, taxi_type, interval_start, interval_end)
+    transition_graph_row = (transition_group_id, interval_start, interval_end)
 
     # list of (transition_graph_id, source_node_id, dest_node_id, weight)
     l_edges = []
@@ -119,25 +92,61 @@ def write_trip_graph(entry, data_file_name, graph_db):
     try:
         with sqlite3.connect(graph_db) as conn:
             conn.execute('PRAGMA foreign_keys = ON')
-            conn.execute('INSERT INTO transition_graphs (name, month, year, taxi_type, '
-                         'interval_start, interval_end) '
-                         'values (?,?,?,?,?,?)', transition_graph_row)
 
-            cursor = conn.execute('SELECT id from transition_graphs WHERE name=\'{}\''.format(graph_name))
-            transition_graph_id = next(cursor)[0]
+            transition_graph_id = conn.execute('INSERT INTO transition_graph (transition_group_id, interval_start, interval_end) '
+                         'values (?,?,?)', transition_graph_row).lastrowid
 
             l_edges = [(transition_graph_id,) + edge for edge in l_edges]
 
             conn.execute('PRAGMA foreign_keys = ON')
-            conn.executemany('INSERT INTO transition_edges (transition_graph_id, '
-                             'source_node_id, dest_node_id, weight)'
+            conn.executemany('INSERT INTO transition_edge (transition_graph_id, '
+                             'src_node_id, dest_node_id, weight)'
                              'values (?,?,?,?)', l_edges)
 
             conn.commit()
-    except sqlite3.IntegrityError:
+    except (sqlite3.IntegrityError, ValueError):
         import traceback
-        sys.stderr.write('Error when  writing graph {}:\n{}\n'.format(graph_name, traceback.format_exc()))
+        sys.stderr.write('Error when writing graph to transition group {} for interval {} to {}:\n{}\n'
+                         .format(transition_group_id, interval_start, interval_end, traceback.format_exc()))
 
+
+def _get_transition_group_id(transition_group_name):
+    match = re.search(r'-(\d\d)(?!d)', transition_group_name)
+    month = int(match.group(1))
+
+    match = re.search(r'(\d{4})-', transition_group_name)
+    year = int(match.group(1))
+
+    match = re.search(r'^(.+?)_', transition_group_name)
+    taxi_type = match.group(1)
+
+    with sqlite3.connect(graph_db) as conn:
+        conn.execute('PRAGMA foreign_keys = ON')
+
+        cursor = conn.execute('SELECT id from transition_group where name=?', (transition_group_name,))
+        result = cursor.fetchone()
+
+        if result is None:
+            transition_group_id = conn.execute('INSERT into transition_group (name) VALUES (?)', (transition_group_name,)).lastrowid
+            transition_period_id = conn.execute(
+                'INSERT INTO transition_period (transition_group_id, month, year, taxi_type) VALUES (?,?,?,?)',
+                (transition_group_id, month, year, taxi_type)).lastrowid
+        else:
+            transition_group_id = result[0]
+            cursor = conn.execute('SELECT id, month, year, taxi_type '
+                                  'from transition_period where transition_group_id=?', (transition_group_id,))
+            results = cursor.fetchall()
+            if (len(results) != 1):
+                raise ValueError(
+                    'A transition group with the same name was found and it has incompatible transition_period(s)')
+            result = results[0]
+            if (result[1] != month or result[2] != year or result[3] != taxi_type):
+                raise ValueError(
+                    'A transition group with the same name was found and it has incompatible transition_period(s)')
+            transition_period_id = result[0]
+
+        conn.commit()
+    return transition_group_id
 
 
 if __name__ == '__main__':
@@ -155,10 +164,12 @@ if __name__ == '__main__':
     graph_db = sys.argv[3]
 
     for data_file in data_files:
-        data_file_name = os.path.split(data_file)[1]
+        transition_group_name = os.path.split(data_file)[1]
+        transition_group_id = _get_transition_group_id(transition_group_name)
 
         script_dir = os.path.split(os.path.realpath(__file__))[0]
-        sc = SparkContext("local", "Transition Graph", pyFiles=[os.path.join(script_dir, 'quantization.py')])
+        pyFiles = [os.path.join(script_dir, py_file) for py_file in ['quantization.py']]
+        sc = SparkContext("local", "Transition Graph", pyFiles=pyFiles)
         taxi_data = sc.textFile(data_file) \
             .map(lambda row: row.split(',')) \
             .filter(lambda row: len(row) > 1)
@@ -176,5 +187,5 @@ if __name__ == '__main__':
             .filter(lambda row: row is not None) \
             .groupByKey() \
             .map(lambda entry: generate_trip_graph(entry, header, graph_db)) \
-            .map(lambda entry: write_trip_graph(entry, data_file_name, graph_db)) \
+            .map(lambda entry: write_trip_graph(entry, transition_group_id, interval_length, graph_db)) \
             .collect()
