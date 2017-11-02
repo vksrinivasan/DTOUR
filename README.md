@@ -20,7 +20,7 @@ systemctl restart mysql.service
 4.  Create database, user, and set permissions
 mysql -u root -p << EOF
 	create database dtour;
-	create user 'dtour' identified by 'dtour_1!2@3#';
+	create user 'dtour' identified by '<insert password here>';
 	grant all on dtour.* to 'dtour';
 EOF
 
@@ -31,6 +31,14 @@ sudo apt-get install mysql-client
 sudo apt-get install libmysqlclient-dev
 sudo pip install MySql-python
 
-2. It would be useful to specify credentials specific to the database.
-I have yet to test out https://dba.stackexchange.com/questions/3889/is-it-possible-to-have-passwords-configured-per-database-or-per-host-in-my-cnf
+2. Set up an automatic password when accessing the host. Be sure to include the quotation marks around the password when prompted.
+mysql_config_editor set -G dtour -h <host_name> -u dtour -p
+>> '<Password Here>'  
+
+3. Now you can access the database through shell with the following command.
+mysql --login-path=dtour -D dtour
+
+4. Modify the credentials.txt files to specify hostname and password
+They are located in 'graph_generation/credentials.txt' and 'DTOURCode/src/main/resources/credentials.txt'.
+Examples are provided as credentials_example.txt in the same directories.
 

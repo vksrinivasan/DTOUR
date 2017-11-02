@@ -10,13 +10,12 @@ export PYTHONPATH=`realpath ../`
 credentials=$(cat  credentials.txt |tr "\n" " ")
 host=`echo $credentials | awk '{print $1;}'`
 db=`echo $credentials | awk '{print $2;}'`
-user=`echo $credentials | awk '{print $3;}'`
 
-num_tables=`mysql -h $host -D $db -u $user <<<"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='dtour';"`
+num_tables=`mysql --login-path 'dtour' -D $db <<<"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='dtour';"`
 num_tables=`echo $num_tables | egrep -o '[0-9]+'`
 
 if [ "$num_tables" -eq 0 ]; then
-	mysql -h $host -D $db -u $user  < create_graph_schema.sql
+	mysql --login-path 'dtour' -D '$db'  < create_graph_schema.sql
 	python adjacency/generate_adj_graph.py
 fi
 
@@ -34,9 +33,9 @@ do
 		# echo $DOWNLOAD_URL
 		# echo $DOWNLOAD_FILE
 
-		# wget -O $DOWNLOAD_FILE $DOWNLOAD_URL
-		python -W ignore transition/generate_transition_graph.py $INTERVAL_LENGTH $DOWNLOAD_FILE 2> $LOG_DATA_FILE
-		# rm $DOWNLOAD_FILE
+		wget -O $DOWNLOAD_FILE $DOWNLOAD_URL
+		python -W ignore transition/generate_transition_graph.py $INTERVAL_LENGTH $DOWNLOAD_FILE &> $LOG_DATA_FILE
+		rm $DOWNLOAD_FILE
 	done
 done
 
