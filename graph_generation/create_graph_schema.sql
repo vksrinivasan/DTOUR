@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS adj_edge(id INTEGER PRIMARY KEY AUTO_INCREMENT,
 	FOREIGN KEY(src_node_id) REFERENCES node(id),
 	FOREIGN KEY(dest_node_id) REFERENCES node(id));
 CREATE INDEX adj_src_dest_index on adj_edge(src_node_id, dest_node_id);
+CREATE INDEX adj_dest_index on adj_edge(dest_node_id);
 
 CREATE TABLE IF NOT EXISTS transition_group(id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(60) UNIQUE);
 
