@@ -33,6 +33,27 @@ def map_row(row, pu_time_index, interval_length):
         return None
 
 
+def filter_trip_graph(entry, transition_group_id, interval_length):
+    interval_index = entry[0]
+
+    interval_start = interval_length * interval_index
+    interval_end = interval_start + interval_length
+
+    with connector.open() as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM transition_graph where transition_group_id=%s '
+                       'AND interval_start=%s AND interval_end=%s',
+                       (transition_group_id, interval_start, interval_end))
+        if (cursor.fetchone() is not None):
+            sys.stderr.write('Warning: transition grpah already exists in transition group {} for interval {} to {}: '
+                             'Skipping this interval.\n'
+                             .format(transition_group_id, interval_start, interval_end))
+            return False
+
+        conn.commit()
+    return True
+
+
 def generate_trip_graph(entry, header, connector):
     quantizer = Quantizer(connector)
     trip_graph = np.zeros((quantizer.num_nodes(), quantizer.num_nodes()), dtype=np.int)
@@ -196,6 +217,7 @@ if __name__ == '__main__':
             .map(lambda row: map_row(row, pu_time_index, interval_length)) \
             .filter(lambda row: row is not None) \
             .groupByKey() \
+            .filter(lambda entry: filter_trip_graph(entry, transition_group_id, interval_length)) \
             .map(lambda entry: generate_trip_graph(entry, header, connector)) \
             .map(lambda entry: write_trip_graph(entry, transition_group_id, interval_length, connector)) \
             .collect()
