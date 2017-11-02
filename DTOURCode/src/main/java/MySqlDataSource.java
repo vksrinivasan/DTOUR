@@ -41,31 +41,28 @@ public class MySqlDataSource implements DataSource {
 
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("America/New_York"));
         int interval = now.getHour()*60 + now.getMinute();
-        int transitionGraphId = intervalToIdMap.floorKey(interval);
+        int transitionGraphId = intervalToIdMap.get(intervalToIdMap.floorKey(interval));
         Map<Integer, EdgeData> edgeDataMap = new TreeMap<>();
         int weightSum = 0;
 
         try {
             connection = getConnection();
-//            connection = DriverManager.getConnection(
-//                    String.format("jdbc:mysql://%s/%s?user=%s&password=%s",
-//                            connectionParams.host, connectionParams.db, connectionParams.user, connectionParams.password));
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT source, dest, weight from transition_edge " +
-                    String.format("where transition_graph_id=%s AND source=%s", transitionGraphId, source));
+            ResultSet resultSet = statement.executeQuery("SELECT src_node_id, dest_node_id, weight from transition_edge " +
+                    String.format("where transition_graph_id=%s AND src_node_id=%s", transitionGraphId, source));
             while (resultSet.next()) {
-                int dest = resultSet.getInt("dest");
+                int dest = resultSet.getInt("dest_node_id");
                 int weight = resultSet.getInt("weight");
                 weightSum += weight;
                 EdgeData edgeData = new EdgeData(source, dest, weight);
                 edgeDataMap.put(dest, edgeData);
             }
 
-            resultSet = statement.executeQuery("SELECT source, dest from adj_edge " +
-                    String.format("where source=%s", source));
+            resultSet = statement.executeQuery("SELECT src_node_id, dest_node_id from adj_edge " +
+                    String.format("where src_node_id=%s", source));
             while (resultSet.next()) {
-                int dest = resultSet.getInt("dest");
-                int weight = resultSet.getInt("weight");
+                int dest = resultSet.getInt("dest_node_id");
+                int weight = 1;
                 weightSum += weight;
 
                 EdgeData edgeData = edgeDataMap.get(dest);
@@ -125,16 +122,13 @@ public class MySqlDataSource implements DataSource {
 
         try {
             connection = getConnection();
-//            connection = DriverManager.getConnection(
-//                    String.format("jdbc:mysql://%s/%s?user=%s&password=%s",
-//                            connectionParams.host, connectionParams.db, connectionParams.user, connectionParams.password));
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT id from transition_group " +
                     String.format("where name=\'%s\'", TRANSITION_GROUP_NAME));
             resultSet.next();
             int transitionGroupId = resultSet.getInt("id");
 
-            for (int intervalStart = 0; intervalStart + GRAPH_INTERVAL < 24 *60; intervalStart += GRAPH_INTERVAL) {
+            for (int intervalStart = 0; intervalStart + GRAPH_INTERVAL < 24 * 20; intervalStart += GRAPH_INTERVAL) {
                 resultSet = statement.executeQuery("SELECT id from transition_graph " +
                         String.format("where transition_group_id=%s AND interval_start=%d AND interval_end=%d",
                                 transitionGroupId, intervalStart, intervalStart + GRAPH_INTERVAL));
@@ -158,6 +152,9 @@ public class MySqlDataSource implements DataSource {
 
     private Connection getConnection() throws SQLException {
         Connection conn = connectionDataSource.getConnection();
+//        Connection conn = DriverManager.getConnection(
+//            String.format("jdbc:mysql://%s/%s?user=%s&password=%s",
+//                    connectionParams.host, connectionParams.db, connectionParams.user, connectionParams.password));
         return conn;
     }
 
@@ -181,5 +178,7 @@ public class MySqlDataSource implements DataSource {
     public static void main(String[] args) {
         MySqlDataSource dataSource = new MySqlDataSource();
         dataSource.initSource();
+        List<EdgeData> neighbors = dataSource.getNeighbors(2);
+        int i = 0;
     }
 }
