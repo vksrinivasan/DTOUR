@@ -10,6 +10,7 @@ public class AStar {
     DataSource                         mySource;            // where do I get information about my graph/neighbors from
     Heuristic                          myHeur;              // what heuristic do I use for A*
     PathGraph                          myPathGraph;         // where do I store information about side track edges
+    double[]                           myNodeLongLat;       // store longitude and latitude of every node for heuristics
     PriorityQueue<VertexNode>          unExplored;          // enforce k* heuristic for next node selection
     HashMap<Integer, Integer>          cameFrom;            // helps trace back path when I reach destination
     HashMap<Integer, Double>           costSoFar;           // cost so far up until node
@@ -30,13 +31,15 @@ public class AStar {
         }
     }
 
-    AStar(int start, int end, DataSource myData, Heuristic myHeur, PathGraph myPathGraph) {
+    AStar(int start, int end, DataSource myData, Heuristic myHeur, PathGraph myPathGraph, double[] myNodeLongLat) {
         // Set the values that we know
         this.startNode = start;
         this.endNode = end;
         this.mySource = myData;
         this.myHeur = myHeur;
         this.myPathGraph = myPathGraph;
+        this.myNodeLongLat = myNodeLongLat;
+
         this.searchComplete = false;
 
         // initialize the data structures that we will need
@@ -91,7 +94,15 @@ public class AStar {
                 // then let's add this node to the priority queue
                 if(this.costSoFar.get(tempEdge.dest) == null) {
                     this.costSoFar.put(tempEdge.dest, newCostVal);
-                    double priority = newCostVal + this.myHeur.computeHeuristic(tempEdge.dest, this.endNode);
+
+                    // priority is a combination of probability and heuristic
+                    double tempS_long = this.myNodeLongLat[2*tempEdge.dest];
+                    double tempS_lat = this.myNodeLongLat[2*tempEdge.dest+1];
+                    double tempD_long = this.myNodeLongLat[2*this.endNode];
+                    double tempD_lat = this.myNodeLongLat[2*this.endNode+1];
+
+                    double priority = newCostVal + this.myHeur.computeHeuristic(tempS_long, tempD_long, tempS_lat, tempD_lat);
+
                     VertexNode neighborToAdd = new VertexNode(tempEdge.dest, priority);
                     this.VNReference.put(tempEdge.dest, neighborToAdd);
                     this.unExplored.add(neighborToAdd);
@@ -123,7 +134,13 @@ public class AStar {
 
                     // Then deal with updating to the new shortest known path
                     this.costSoFar.put(tempEdge.dest, newCostVal);
-                    double priority = newCostVal + this.myHeur.computeHeuristic(tempEdge.dest, this.endNode);
+
+                    double tempS_long = this.myNodeLongLat[2*tempEdge.dest];
+                    double tempS_lat = this.myNodeLongLat[2*tempEdge.dest+1];
+                    double tempD_long = this.myNodeLongLat[2*this.endNode];
+                    double tempD_lat = this.myNodeLongLat[2*this.endNode+1];
+
+                    double priority = newCostVal + this.myHeur.computeHeuristic(tempS_long, tempD_long, tempS_lat, tempD_lat);
                     VertexNode oldNeighborNode = this.VNReference.get(tempEdge.dest);
                     this.unExplored.remove(oldNeighborNode);
                     oldNeighborNode.pVal = priority;

@@ -2,11 +2,13 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+
         DataSource mySource = new MySqlDataSource();
         mySource.initSource();
-        Heuristic myHeuristic = new NullHeuristic_Implement();
+        double []NodeLongLat = mySource.getGeoList(); // We will keep longitudes/latitudes in memory (only ~1000 nodes)
+        Heuristic myHeuristic = new DistanceHeuristic();
         PathGraph myPathGraph = new PathGraph();
-        AStar myAlgo = new AStar(46,2, mySource, myHeuristic, myPathGraph);
+        AStar myAlgo = new AStar(1053,1020, mySource, myHeuristic, myPathGraph, NodeLongLat);
 
         // Time it and keep track of A* iteration
         final long startTime = System.currentTimeMillis();

@@ -92,6 +92,45 @@ public class MySqlDataSource implements DataSource {
     }
 
     @Override
+    public double[] getGeoList() {
+        Connection connection = null;
+        int nodeCount = 0;
+        double[] geoList;
+
+        try {
+            connection = getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT count(*) id  FROM node");
+            while (resultSet.next()) {
+                nodeCount = resultSet.getInt("id");
+            }
+
+            geoList = new double[(nodeCount+1)*2];
+
+            resultSet = statement.executeQuery("SELECT id, longitude, latitude from node");
+            while (resultSet.next()) {
+                int tempID = resultSet.getInt("id");
+                double tempLong = resultSet.getDouble("longitude");
+                double tempLat = resultSet.getDouble("latitude");
+                geoList[2*tempID] = tempLong;
+                geoList[2*tempID+1] = tempLat;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not connect to the database", e);
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return geoList;
+    }
+
+    @Override
     public void closeSource() {
 
     }
