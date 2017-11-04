@@ -62,7 +62,7 @@ public class StaticData_Implement implements DataSource {
     }
 
     public double[] getGeoList() {
-        return new double[12];
+        return new double[14];
     }
 
     /* Don't have to close anything, static data */
