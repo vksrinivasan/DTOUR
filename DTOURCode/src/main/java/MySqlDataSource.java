@@ -152,9 +152,9 @@ public class MySqlDataSource implements DataSource {
 
     private Connection getConnection() throws SQLException {
         Connection conn = connectionDataSource.getConnection();
-//        Connection conn = DriverManager.getConnection(
-//            String.format("jdbc:mysql://%s/%s?user=%s&password=%s",
-//                    connectionParams.host, connectionParams.db, connectionParams.user, connectionParams.password));
+//        String connString = String.format("jdbc:mysql://%s/%s?user=%s&password=%s",
+//                connectionParams.host, connectionParams.db, connectionParams.user, connectionParams.password);
+//        Connection conn = DriverManager.getConnection(connString);
         return conn;
     }
 
@@ -167,10 +167,10 @@ public class MySqlDataSource implements DataSource {
         private ConnectionParams(byte[] buffer) {
             String temp = new String(buffer);
             String[] lines = temp.split("\n");
-            host = lines[0];
-            db = lines[1];
-            user = lines[2];
-            password = lines[3];
+            host = lines[0].trim();
+            db = lines[1].trim();
+            user = lines[2].trim();
+            password = lines[3].trim();
         }
     }
 
@@ -179,6 +179,9 @@ public class MySqlDataSource implements DataSource {
         MySqlDataSource dataSource = new MySqlDataSource();
         dataSource.initSource();
         List<EdgeData> neighbors = dataSource.getNeighbors(2);
+        for(EdgeData temp : neighbors) {
+            System.out.println(temp.dest);
+        }
         int i = 0;
     }
 }
