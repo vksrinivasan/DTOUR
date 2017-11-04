@@ -1,18 +1,14 @@
 import json
 import os
 import sys
-from graph_generation.mysql_util import Connector
+from mysql_util import Connector
 
 dirname, _ = os.path.split(os.path.abspath(__file__))
 NODE_FILE_PATH = os.path.join(dirname, 'gps_dict.json')
 ADJ_FILE_PATH = os.path.join(dirname, 'Manhattan_adj_graph.json')
-DB_PATH = os.path.join(dirname, '../../../graph/graph_database.db')
 CREDENTIALS_PATH = os.path.join(dirname, '../credentials.txt')
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        DB_PATH = sys.argv[1]
-
     with open(NODE_FILE_PATH) as f:
         d_nodes = json.load(f)
     with open(ADJ_FILE_PATH) as f:

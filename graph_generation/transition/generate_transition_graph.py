@@ -174,7 +174,7 @@ def _get_transition_group_id(transition_group_name, connector):
 
 
 if __name__ == '__main__':
-    from graph_generation.mysql_util import Connector
+    from mysql_util import Connector
 
     interval_length = int(sys.argv[1])
 
