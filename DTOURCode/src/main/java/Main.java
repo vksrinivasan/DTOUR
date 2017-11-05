@@ -9,7 +9,7 @@ public class Main {
         Heuristic myHeuristic = new DistanceHeuristic();
         PathGraph myPathGraph = new PathGraph();
        // AStar myAlgo = new AStar(0,3, mySource, myHeuristic, myPathGraph);
-        AStar myAlgo = new AStar(0,3, mySource, myHeuristic, myPathGraph, NodeLongLat);
+        AStar myAlgo = new AStar(0,6, mySource, myHeuristic, myPathGraph, NodeLongLat);
 
         // Currently the A* code stops running once it finds a path to the destination - I have this while loop here
         // to keep running it until it completes (finds shortest/most probabilistic path to destination), but we can
@@ -27,38 +27,24 @@ public class Main {
         
         int dest=order.get(order.size()-1);
         System.out.println(HtCollection.get(dest));
-        PathGraph.HeapEdge target=HtCollection.get(dest).heap[1];
-        Vertex start=new Vertex(target);
-        
-        
+        HeapEdge target=HtCollection.get(dest).heap[1];
+
         // run dijkstra on dest to find k paths
-        
-        DijkstraAlgorithm dij=new DijkstraAlgorithm(g);
-        dij.execute(start);
-        LinkedList <Vertex> path=dij.getPath(start);
+        HeapEdge start = g.getStart();
+        LinkedList<HeapEdge> path = null;
+        if(start != null) {
+            DijkstraAlgorithm dij = new DijkstraAlgorithm(g);
+            dij.execute(start);
+            path = dij.getPath(start);
+        }
         
         
         
         
 
-        for(int i=1;i<path.size();i++) {
-        	
-        	//PathGraph.Heap_In s=myPathGraph.treeHeapCollection.get(order.get(i));
-        	
-        	//s.root=myPathGraph.treeHeapCollection.get(order.get(i-1)).root;
-        	 
-        	
-        	//System.out.println(e.toString());
-        	
-        System.out.println(path.get(i).getId().source);
-        
-        
-        };
-        
-        //myPathGraph.treeHeapCollection=myPathGraph.Hin_Collection;
-        
-        
-        System.out.println(myPathGraph.Hin_Collection.get(1).root.dest);
+        for(int i=0 ; i<path.size(); i++) {
+            System.out.println(path.get(i).source + ", " + path.get(i).dest);
+        }
     }
 }
 

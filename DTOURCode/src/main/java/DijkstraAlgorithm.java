@@ -1,49 +1,49 @@
 import java.util.*;
 public class DijkstraAlgorithm {
 
-    private final List<Vertex> nodes;
+    private final List<HeapEdge> nodes;
     private final List<Edge> edges;
-    private Set<Vertex> settledNodes;
-    private Set<Vertex> unSettledNodes;
-    private Map<Vertex, Vertex> predecessors;
-    private Map<Vertex, Double> distance;
+    private Set<HeapEdge> settledNodes;
+    private Set<HeapEdge> unSettledNodes;
+    private Map<HeapEdge, HeapEdge> predecessors;
+    private Map<HeapEdge, Double> distance;
 
     public DijkstraAlgorithm(Graph graph) {
         // create a copy of the array so that we can operate on this array
-        this.nodes = new ArrayList<Vertex>(graph.getVertexes());
+        this.nodes = new ArrayList<HeapEdge>(graph.getVertexes());
         this.edges = new ArrayList<Edge>(graph.getEdges());
     }
 
-    public void execute(Vertex source) {
-        settledNodes = new HashSet<Vertex>();
-        unSettledNodes = new HashSet<Vertex>();
-        distance = new HashMap<Vertex, Double>();
-        predecessors = new HashMap<Vertex, Vertex>();
+    public void execute(HeapEdge source) {
+        settledNodes = new HashSet<HeapEdge>();
+        unSettledNodes = new HashSet<HeapEdge>();
+        distance = new HashMap<HeapEdge, Double>();
+        predecessors = new HashMap<HeapEdge, HeapEdge>();
         distance.put(source, 0.0);
         unSettledNodes.add(source);
         while (unSettledNodes.size() > 0) {
-            Vertex node = getMinimum(unSettledNodes);
+            HeapEdge node = getMinimum(unSettledNodes);
             settledNodes.add(node);
             unSettledNodes.remove(node);
             findMinimalDistances(node);
         }
     }
 
-    private void findMinimalDistances(Vertex node) {
-        List<Vertex> adjacentNodes = getNeighbors(node);
-        for (Vertex target : adjacentNodes) {
+    private void findMinimalDistances(HeapEdge node) {
+        List<HeapEdge> adjacentNodes = getNeighbors(node);
+        for (HeapEdge target : adjacentNodes) {
             if (getShortestDistance(target) > getShortestDistance(node)
                     + getDistance(node, target)) {
                 distance.put(target, getShortestDistance(node)
                         + getDistance(node, target));
-                predecessors.put(target, node);
+                predecessors.put(node, target);
                 unSettledNodes.add(target);
             }
         }
 
     }
 
-    private double getDistance(Vertex node, Vertex target) {
+    private double getDistance(HeapEdge node, HeapEdge target) {
         for (Edge edge : edges) {
             if (edge.getSource().equals(node)
                     && edge.getDestination().equals(target)) {
@@ -53,8 +53,8 @@ public class DijkstraAlgorithm {
         throw new RuntimeException("Should not happen");
     }
 
-    private List<Vertex> getNeighbors(Vertex node) {
-        List<Vertex> neighbors = new ArrayList<Vertex>();
+    private List<HeapEdge> getNeighbors(HeapEdge node) {
+        List<HeapEdge> neighbors = new ArrayList<HeapEdge>();
         for (Edge edge : edges) {
             if (edge.getSource().equals(node)
                     && !isSettled(edge.getDestination())) {
@@ -64,9 +64,9 @@ public class DijkstraAlgorithm {
         return neighbors;
     }
 
-    private Vertex getMinimum(Set<Vertex> vertexes) {
-        Vertex minimum = null;
-        for (Vertex vertex : vertexes) {
+    private HeapEdge getMinimum(Set<HeapEdge> vertexes) {
+        HeapEdge minimum = null;
+        for (HeapEdge vertex : vertexes) {
             if (minimum == null) {
                 minimum = vertex;
             } else {
@@ -78,11 +78,11 @@ public class DijkstraAlgorithm {
         return minimum;
     }
 
-    private boolean isSettled(Vertex vertex) {
+    private boolean isSettled(HeapEdge vertex) {
         return settledNodes.contains(vertex);
     }
 
-    private double getShortestDistance(Vertex destination) {
+    private double getShortestDistance(HeapEdge destination) {
         Double d = distance.get(destination);
         if (d == null) {
             return Integer.MAX_VALUE;
@@ -95,9 +95,9 @@ public class DijkstraAlgorithm {
      * This method returns the path from the source to the selected target and
      * NULL if no path exists
      */
-    public LinkedList<Vertex> getPath(Vertex target) {
-        LinkedList<Vertex> path = new LinkedList<Vertex>();
-        Vertex step = target;
+    public LinkedList<HeapEdge> getPath(HeapEdge target) {
+        LinkedList<HeapEdge> path = new LinkedList<HeapEdge>();
+        HeapEdge step = target;
         // check if a path exists
         if (predecessors.get(step) == null) {
             return null;
@@ -107,8 +107,7 @@ public class DijkstraAlgorithm {
             step = predecessors.get(step);
             path.add(step);
         }
-        // Put it into the correct order
-        Collections.reverse(path);
+
         return path;
     }
 

@@ -1,10 +1,10 @@
 public class Edge  {
     
-    private final Vertex source;
-    private final Vertex destination;
+    private final HeapEdge source;
+    private final HeapEdge destination;
     private final double weight;
 
-    public Edge( Vertex source, Vertex destination, double weight) {
+    public Edge( HeapEdge source, HeapEdge destination, double weight) {
         
         this.source = source;
         this.destination = destination;
@@ -12,11 +12,11 @@ public class Edge  {
     }
 
    
-    public Vertex getDestination() {
+    public HeapEdge getDestination() {
         return destination;
     }
 
-    public Vertex getSource() {
+    public HeapEdge getSource() {
         return source;
     }
     public double getWeight() {

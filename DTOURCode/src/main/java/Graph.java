@@ -2,35 +2,31 @@ import java.util.*;
 
 import java.util.*;
 public class Graph {
-    private final ArrayList<Vertex> vertexes;
+    private final HashSet<HeapEdge> vertexes;
     private final ArrayList<Edge> edges;
+    private HeapEdge startVertex = null;
     
     public Graph() {
-    	this.vertexes=new ArrayList<Vertex>();
+    	this.vertexes=new HashSet<HeapEdge>();
     	this.edges=new ArrayList<Edge>();
     	
     	
     }
 
-   
+    public void setStart(HeapEdge v) { startVertex = v; }
+
+    public HeapEdge getStart() { return startVertex; }
     
-    public void add(PathGraph.HeapEdge source, PathGraph.HeapEdge destination,double weight) {
+    public void add(HeapEdge source, HeapEdge destination,double weight) {
+
+    	vertexes.add(source);
+    	vertexes.add(destination);
     	
-    	Vertex v=new Vertex(source);
-    	Vertex v2=new Vertex(destination);
-    	
-    	vertexes.add(v);
-    	
-    	vertexes.add(v2);
-    	
-    	Edge e1=new Edge(v, v2, weight);
-    	
-    	
-    	
-    	
+    	Edge e1=new Edge(source, destination, weight);
+        edges.add(e1);
     }
 
-    public List<Vertex> getVertexes() {
+    public HashSet<HeapEdge> getVertexes() {
         return vertexes;
     }
 

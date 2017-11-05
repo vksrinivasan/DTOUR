@@ -1,10 +1,8 @@
 
 public class MinHeap {
 
-	PathGraph.HeapEdge heap[];
-
+	HeapEdge heap[];
 	int sizetillnow;
-
 	static final int FRONT = 1;
 
 	/**
@@ -13,18 +11,26 @@ public class MinHeap {
 	 */
 
 	public MinHeap(int size) {
-		heap = new PathGraph.HeapEdge[size + 1];
+		heap = new HeapEdge[size + 1];
 		sizetillnow = 0;
-		PathGraph x = new PathGraph();
-		// x.nil=new PathGraph.HeapEdge(-1, -1,Integer.MIN_VALUE);
-		heap[0] = x.nil;
-
+		heap[0] = new HeapEdge(-1, -1, -1);
 	}
 
-	@Override
-	protected Object clone() throws CloneNotSupportedException {
+	public MinHeap clone() {
+		MinHeap toReturn = new MinHeap(this.heap.length);
+		toReturn.sizetillnow = this.sizetillnow;
+		int index = 0;
 
-		return super.clone();
+		for(HeapEdge temp : this.heap) {
+			if(temp == null) {
+				toReturn.heap[index] = null;
+			} else {
+				toReturn.heap[index] = new HeapEdge(temp);
+			}
+			index++;
+		}
+
+		return toReturn;
 	}
 
 	/**
@@ -32,7 +38,7 @@ public class MinHeap {
 	 * 
 	 */
 
-	public void insert(PathGraph.HeapEdge value) {
+	public void insert(HeapEdge value) {
 		sizetillnow = sizetillnow + 1;
 		heap[sizetillnow] = value;
 		// System.out.println("insert"+sizetillnow);
@@ -41,7 +47,7 @@ public class MinHeap {
 
 		while (heap[current].priority < heap[current / 2].priority) {
 			// System.out.println("current"+heap[current]+ "current/2"+heap[current/2]);
-			PathGraph.HeapEdge tmp;
+			HeapEdge tmp;
 			tmp = heap[current];
 			heap[current] = heap[current / 2];
 			heap[current / 2] = tmp;
@@ -55,8 +61,8 @@ public class MinHeap {
 	 * remove() method used to pop the minimum element.
 	 * 
 	 */
-	public PathGraph.HeapEdge remove() {
-		PathGraph.HeapEdge popped = heap[FRONT];
+	public HeapEdge remove() {
+		HeapEdge popped = heap[FRONT];
 		// System.out.println("popped"+popped);
 		heap[FRONT] = heap[sizetillnow--];
 		minHeapify(FRONT);
@@ -99,14 +105,14 @@ public class MinHeap {
 
 				if (heap[pos * 2].priority < heap[pos * 2 + 1].priority) {
 
-					PathGraph.HeapEdge tmp = heap[pos];
+					HeapEdge tmp = heap[pos];
 					heap[pos] = heap[pos * 2];
 					heap[pos * 2] = tmp;
 					minHeapify(pos * 2);
 
 				} else {
 
-					PathGraph.HeapEdge tmp = heap[pos];
+					HeapEdge tmp = heap[pos];
 					heap[pos] = heap[pos * 2 + 1];
 					heap[pos * 2 + 1] = tmp;
 					minHeapify(pos * 2 + 1);

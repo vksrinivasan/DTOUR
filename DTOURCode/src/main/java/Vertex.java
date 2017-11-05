@@ -1,15 +1,15 @@
 
 	
 	public class Vertex {
-	    final private PathGraph.HeapEdge id;
+	    final private HeapEdge id;
 	    
 
 
-	    public Vertex(PathGraph.HeapEdge id) {
+	    public Vertex(HeapEdge id) {
 	        this.id = id;
 	       
 	    }
-	    public PathGraph.HeapEdge getId() {
+	    public HeapEdge getId() {
 	        return id;
 	    }
 

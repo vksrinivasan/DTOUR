@@ -4,22 +4,7 @@ import java.util.PriorityQueue;
 
 public class PathGraph {
 
-	class HeapEdge {
-		int source;
-		int dest;
-		double priority;
-
-		HeapEdge(int src, int dst, double prity) {
-			this.source = src;
-			this.dest = dst;
-			this.priority = prity;
-		}
-	}
-
-	HeapEdge nil = new HeapEdge(-1, -1, -1);
-	Heap_In nil1 = new Heap_In();
-
-	class Heap_In {
+	static class Heap_In {
 		HeapEdge root;
 		// PriorityQueue<HeapEdge> children;
 		MinHeap children;

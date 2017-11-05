@@ -1,3 +1,5 @@
+import sun.awt.HToolkit;
+
 import java.util.*;
 
 public class TreeHeap {
@@ -16,10 +18,7 @@ public class TreeHeap {
 		for (int i = 0; i < order.size(); i++) {
 			MinHeap rootHeap = new MinHeap(100);
 
-			if (HinCollection.get(order.get(i)) == null) {
-				PathGraph x = new PathGraph();
-				HinCollection.put(order.get(i), x.nil1);
-			}
+			if(!HinCollection.containsKey(order.get(i))) { HinCollection.put(order.get(i), new PathGraph.Heap_In()); }
 
 			if (i == 0) {
 
@@ -27,16 +26,16 @@ public class TreeHeap {
 
 					rootHeap.insert(HinCollection.get(order.get(i)).root);
 					// add crossedge every node in heap to root of source
-					PathGraph.HeapEdge source = HinCollection.get(i).root;
+					HeapEdge source = HinCollection.get(i).root;
 					int src = HinCollection.get(order.get(i)).root.source;
-					PathGraph.HeapEdge destination = HinCollection.get(src).root;
+					HeapEdge destination = HinCollection.get(src).root;
 					double weight = destination.priority;
 
 					g.add(source, destination, weight);
 
 					// add heapEdge-pointers to children
 
-					PathGraph.HeapEdge heapEdgeDestination = HinCollection.get(order.get(i)).children.heap[1];
+					HeapEdge heapEdgeDestination = HinCollection.get(order.get(i)).children.heap[1];
 					double heapEdgeweight = heapEdgeDestination.priority - source.priority;
 					g.add(source, heapEdgeDestination, heapEdgeweight);
 
@@ -51,45 +50,105 @@ public class TreeHeap {
 
 					MinHeap l = HtCollection.get(order.get(i - 1));
 					MinHeap h;
-					try {
-						h = (MinHeap) l.clone();
-						if (HinCollection.get(order.get(i)).root != null) {
-							h.insert(HinCollection.get(order.get(i)).root);
-							// add crossedge every node in heap to root of source
-							PathGraph.HeapEdge source = HinCollection.get(order.get(i)).root;
-							int src = HinCollection.get(order.get(i)).root.source;
-							PathGraph.HeapEdge destination = HinCollection.get(src).root;
-							double weight = destination.priority;
+					h = l.clone();
 
-							g.add(source, destination, weight);
-
-							// add heapEdge-pointers to children
-
-							PathGraph.HeapEdge heapEdgeDestination = HinCollection.get(order.get(i)).children.heap[1];
-							double heapEdgeweight = heapEdgeDestination.priority - source.priority;
-							g.add(source, heapEdgeDestination, heapEdgeweight);
-
-						}
-
-						rootHeap = h;
-					} catch (CloneNotSupportedException e) {
-						// TODO Auto-generated catch block
-
-						System.out.println("not able to clone");
-						e.printStackTrace();
-					}
-
+					rootHeap = h;
 					HtCollection.put(order.get(i), rootHeap);
 
-					// }
+					if (HinCollection.get(order.get(i)).root != null) {
+						h.insert(HinCollection.get(order.get(i)).root);
+
+						// add heapEdge-pointers from root to first child of heap
+						HeapEdge source = HinCollection.get(order.get(i)).root;
+						HeapEdge heapEdgeDestination = HinCollection.get(order.get(i)).children.heap[1];
+						if(heapEdgeDestination != null) {
+							double heapEdgeweight = heapEdgeDestination.priority - source.priority;
+							g.add(source, heapEdgeDestination, heapEdgeweight);
+						}
+
+						// add pointers through children binary heap
+						HeapEdge[] tempChildHeap = HinCollection.get(order.get(i)).children.heap;
+						int tempHeapSize = HinCollection.get(order.get(i)).children.sizetillnow;
+						for(int z = 1; z <= tempHeapSize/2; z++) {
+							if(tempChildHeap[2*z] != null) {
+								double heapEdgeWeight_left = tempChildHeap[2 * z].priority - tempChildHeap[z].priority;
+								g.add(tempChildHeap[z], tempChildHeap[2*z], heapEdgeWeight_left);
+							}
+							if(tempChildHeap[2*z+1] != null) {
+								double heapEdgeWeight_right = tempChildHeap[2*z+1].priority - tempChildHeap[z].priority;
+								g.add(tempChildHeap[z], tempChildHeap[2*z+1], heapEdgeWeight_right);
+							}
+						}
+
+						// Connect every root of Ht
+						HeapEdge[] HT_temp = HtCollection.get(order.get(i)).heap;
+						int tempHTSize = HtCollection.get(order.get(i)).sizetillnow;
+						for(int z = 1; z <= tempHTSize/2; z++) {
+							if(HT_temp[2*z] != null) {
+								double HTEdgeWeight_left = HT_temp[2 * z].priority - HT_temp[z].priority;
+								g.add(HT_temp[z], HT_temp[2*z], HTEdgeWeight_left);
+							}
+							if(HT_temp[2*z+1] != null) {
+								double HTEdgeWeight_right = HT_temp[2*z+1].priority - HT_temp[z].priority;
+								g.add(HT_temp[z], HT_temp[2*z+1], HTEdgeWeight_right);
+							}
+						}
+
+					}
 				}
 
 			}
 
 		}
 
+		// Now another iteration to create cross edges
+		for(int i = 0; i < order.size(); i++) {
+
+			// add crossedge every node in heap to root of source
+			HeapEdge[] tempEdges = HtCollection.get(order.get(i)).heap;
+			int tempEdgesSize = HtCollection.get(order.get(i)).sizetillnow;
+			if(tempEdgesSize > 0) {
+				for(int z = 1; z <= tempEdgesSize; z++) {
+					HeapEdge tempSrc = tempEdges[z];
+
+					if(!HinCollection.containsKey(tempSrc.source)) { continue; }
+
+					HeapEdge tempDest = HinCollection.get(tempSrc.source).root;
+					if(tempDest != null) {
+						double weight = tempDest.priority;
+						g.add(tempSrc, tempDest, weight);
+					}
+				}
+			}
+
+			// add pointers from every child to source's root
+			tempEdges = HinCollection.get(order.get(i)).children.heap;
+			tempEdgesSize = HinCollection.get(order.get(i)).children.sizetillnow;
+			if(tempEdgesSize > 0) {
+				for(int z = 1; z <= tempEdgesSize; z++) {
+					HeapEdge tempSrc = tempEdges[z];
+
+					if(!HinCollection.containsKey(tempSrc.source)) { continue; }
+
+					HeapEdge tempDest = HinCollection.get(tempSrc.source).root;
+					if(tempDest != null) {
+						double weight = tempDest.priority;
+						g.add(tempSrc, tempDest, weight);
+					}
+				}
+			}
+
+
+		}
+
+		if(HtCollection.get(order.get(order.size()-1)).heap[1] != null)
+			g.setStart(HtCollection.get(order.get(order.size()-1)).heap[1]);
 		return HtCollection;
 
 	}
 
 }
+
+
+
+
