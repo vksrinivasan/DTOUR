@@ -3,13 +3,17 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
+
+        int start_id = 0;
+        int end_id = 6;
+
         DataSource mySource = new StaticData_Implement();
         //Heuristic myHeuristic = new NullHeuristic_Implement();
         double []NodeLongLat = mySource.getGeoList(); // We will keep longitudes/latitudes in memory (only ~1000 nodes)
         Heuristic myHeuristic = new DistanceHeuristic();
         PathGraph myPathGraph = new PathGraph();
        // AStar myAlgo = new AStar(0,3, mySource, myHeuristic, myPathGraph);
-        AStar myAlgo = new AStar(0,6, mySource, myHeuristic, myPathGraph, NodeLongLat);
+        AStar myAlgo = new AStar(start_id,end_id, mySource, myHeuristic, myPathGraph, NodeLongLat);
 
         // Currently the A* code stops running once it finds a path to the destination - I have this while loop here
         // to keep running it until it completes (finds shortest/most probabilistic path to destination), but we can
@@ -32,11 +36,16 @@ public class Main {
         // run dijkstra on dest to find k paths
         HeapEdge start = g.getStart();
         LinkedList<HeapEdge> path = null;
+        ArrayList<ArrayList<Integer>> final_alt_paths = null;
         if(start != null) {
             DijkstraAlgorithm dij = new DijkstraAlgorithm(g);
-            dij.execute(start);
-            int a = 5;
+            ArrayList<ArrayList<HeapEdge>> pg_paths = dij.execute(start);
+            HashMap<Integer, Integer> astar_sp_tree = myAlgo.getCameFrom();
+            final_alt_paths = PathUtils.pathExpansion(pg_paths, astar_sp_tree, start_id, end_id);
         }
+        final_alt_paths.add(0, new ArrayList<Integer>(order));
+        int a = 5;
+
     }
 }
 

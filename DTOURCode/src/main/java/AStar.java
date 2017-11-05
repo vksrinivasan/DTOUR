@@ -195,4 +195,8 @@ public class AStar {
         Collections.reverse(thePath);
         return thePath;
     }
+
+    public HashMap<Integer, Integer> getCameFrom() {
+        return this.cameFrom;
+    }
 }
