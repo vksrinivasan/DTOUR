@@ -22,25 +22,34 @@ public class TreeHeap {
 
 			if (i == 0) {
 
+				// Add pointers related to the Hin we just added into Ht
 				if (HinCollection.get(order.get(i)).root != null) {
 
 					rootHeap.insert(HinCollection.get(order.get(i)).root);
-					// add crossedge every node in heap to root of source
-					HeapEdge source = HinCollection.get(order.get(i)).root; // This should've been order.get(i) right?
-					int src = HinCollection.get(order.get(i)).root.source;
-					HeapEdge destination = HinCollection.get(src).root; // Need to handle the possibility that this doesn't exist
-					double weight = destination.priority;
 
-					g.add(source, destination, weight, order.get(i), src);
+					// Add heapEdge-pointers from root to first child of heap
+					HeapEdge source = HinCollection.get(order.get(i)).root;
+					HeapEdge heapEdgeDestination = HinCollection.get(order.get(i)).children.heap[1];
+					if(heapEdgeDestination != null) {
+						double heapEdgeWeight = heapEdgeDestination.priority - source.priority;
+						g.add(source, heapEdgeDestination, heapEdgeWeight, order.get(i), order.get(i));
+					}
 
-					// add heapEdge-pointers to children
-					HeapEdge heapEdgeDestination = HinCollection.get(order.get(i)).children.heap[1]; // Need to handle possibility that this doesn't exist
-					double heapEdgeweight = heapEdgeDestination.priority - source.priority;
-
-					g.add(source, heapEdgeDestination, heapEdgeweight, order.get(i), order.get(i));
+					// Add pointers through children binary heap
+					HeapEdge[] tempChildHeap = HinCollection.get(order.get(i)).children.heap;
+					int tempHeapSize = HinCollection.get(order.get(i)).children.sizetillnow;
+					for(int z = 1; z <= tempHeapSize/2; z++) {
+						if(tempChildHeap[2*z] != null) {
+							double heapEdgeWeight_left = tempChildHeap[2 * z].priority - tempChildHeap[z].priority;
+							g.add(tempChildHeap[z], tempChildHeap[2*z], heapEdgeWeight_left, order.get(i), order.get(i));
+						}
+						if(tempChildHeap[2*z+1] != null) {
+							double heapEdgeWeight_right = tempChildHeap[2*z+1].priority - tempChildHeap[z].priority;
+							g.add(tempChildHeap[z], tempChildHeap[2*z+1], heapEdgeWeight_right, order.get(i), order.get(i));
+						}
+					}
 
 				}
-				HtCollection.put(order.get(i), rootHeap);
 			}
 
 			if (i > 0) {
@@ -55,6 +64,7 @@ public class TreeHeap {
 					rootHeap = h;
 					HtCollection.put(order.get(i), rootHeap);
 
+					// Add pointers related to the Hin that we just added into Ht
 					if (HinCollection.get(order.get(i)).root != null) {
 						h.insert(HinCollection.get(order.get(i)).root);
 
