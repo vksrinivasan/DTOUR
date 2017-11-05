@@ -31,13 +31,13 @@ public class TreeHeap {
 					HeapEdge destination = HinCollection.get(src).root;
 					double weight = destination.priority;
 
-					g.add(source, destination, weight);
+					g.add(source, destination, weight, order.get(i), src);
 
 					// add heapEdge-pointers to children
-
 					HeapEdge heapEdgeDestination = HinCollection.get(order.get(i)).children.heap[1];
 					double heapEdgeweight = heapEdgeDestination.priority - source.priority;
-					g.add(source, heapEdgeDestination, heapEdgeweight);
+
+					g.add(source, heapEdgeDestination, heapEdgeweight, order.get(i), order.get(i));
 
 				}
 				HtCollection.put(order.get(i), rootHeap);
@@ -63,7 +63,7 @@ public class TreeHeap {
 						HeapEdge heapEdgeDestination = HinCollection.get(order.get(i)).children.heap[1];
 						if(heapEdgeDestination != null) {
 							double heapEdgeweight = heapEdgeDestination.priority - source.priority;
-							g.add(source, heapEdgeDestination, heapEdgeweight);
+							g.add(source, heapEdgeDestination, heapEdgeweight, order.get(i), order.get(i));
 						}
 
 						// add pointers through children binary heap
@@ -72,11 +72,11 @@ public class TreeHeap {
 						for(int z = 1; z <= tempHeapSize/2; z++) {
 							if(tempChildHeap[2*z] != null) {
 								double heapEdgeWeight_left = tempChildHeap[2 * z].priority - tempChildHeap[z].priority;
-								g.add(tempChildHeap[z], tempChildHeap[2*z], heapEdgeWeight_left);
+								g.add(tempChildHeap[z], tempChildHeap[2*z], heapEdgeWeight_left, order.get(i), order.get(i));
 							}
 							if(tempChildHeap[2*z+1] != null) {
 								double heapEdgeWeight_right = tempChildHeap[2*z+1].priority - tempChildHeap[z].priority;
-								g.add(tempChildHeap[z], tempChildHeap[2*z+1], heapEdgeWeight_right);
+								g.add(tempChildHeap[z], tempChildHeap[2*z+1], heapEdgeWeight_right, order.get(i), order.get(i));
 							}
 						}
 					}
@@ -87,11 +87,11 @@ public class TreeHeap {
 					for(int z = 1; z <= tempHTSize/2; z++) {
 						if(HT_temp[2*z] != null) {
 							double HTEdgeWeight_left = HT_temp[2 * z].priority - HT_temp[z].priority;
-							g.add(HT_temp[z], HT_temp[2*z], HTEdgeWeight_left);
+							g.add(HT_temp[z], HT_temp[2*z], HTEdgeWeight_left, order.get(i), order.get(i));
 						}
 						if(HT_temp[2*z+1] != null) {
 							double HTEdgeWeight_right = HT_temp[2*z+1].priority - HT_temp[z].priority;
-							g.add(HT_temp[z], HT_temp[2*z+1], HTEdgeWeight_right);
+							g.add(HT_temp[z], HT_temp[2*z+1], HTEdgeWeight_right, order.get(i), order.get(i));
 						}
 					}
 				}
@@ -110,12 +110,13 @@ public class TreeHeap {
 				for(int z = 1; z <= tempEdgesSize; z++) {
 					HeapEdge tempSrc = tempEdges[z];
 
-					if(!HinCollection.containsKey(tempSrc.source)) { continue; }
+					if(!HtCollection.containsKey(tempSrc.source)) { continue; }
+					if(HtCollection.get(tempSrc.source).sizetillnow == 0) { continue; }
 
-					HeapEdge tempDest = HinCollection.get(tempSrc.source).root;
+					HeapEdge tempDest = HtCollection.get(tempSrc.source).heap[1];
 					if(tempDest != null) {
 						double weight = tempDest.priority;
-						g.add(tempSrc, tempDest, weight);
+						g.add(tempSrc, tempDest, weight, order.get(i), tempSrc.source);
 					}
 				}
 			}
@@ -127,12 +128,13 @@ public class TreeHeap {
 				for(int z = 1; z <= tempEdgesSize; z++) {
 					HeapEdge tempSrc = tempEdges[z];
 
-					if(!HinCollection.containsKey(tempSrc.source)) { continue; }
+					if(!HtCollection.containsKey(tempSrc.source)) { continue; }
+					if(HtCollection.get(tempSrc.source).sizetillnow == 0) { continue; }
 
-					HeapEdge tempDest = HinCollection.get(tempSrc.source).root;
+					HeapEdge tempDest = HtCollection.get(tempSrc.source).heap[1];
 					if(tempDest != null) {
 						double weight = tempDest.priority;
-						g.add(tempSrc, tempDest, weight);
+						g.add(tempSrc, tempDest, weight, order.get(i), tempSrc.source);
 					}
 				}
 			}
