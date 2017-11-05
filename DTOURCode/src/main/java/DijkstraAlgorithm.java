@@ -5,7 +5,7 @@ public class DijkstraAlgorithm {
     private final List<Edge> edges;
     private Set<HeapEdge> settledNodes;
     private Set<HeapEdge> unSettledNodes;
-    private Map<HeapEdge, HeapEdge> predecessors;
+    private Map<HeapEdge, ArrayList<HeapEdge>> predecessors;
     private Map<HeapEdge, Double> distance;
 
     public DijkstraAlgorithm(Graph graph) {
@@ -18,7 +18,7 @@ public class DijkstraAlgorithm {
         settledNodes = new HashSet<HeapEdge>();
         unSettledNodes = new HashSet<HeapEdge>();
         distance = new HashMap<HeapEdge, Double>();
-        predecessors = new HashMap<HeapEdge, HeapEdge>();
+        predecessors = new HashMap<HeapEdge, ArrayList<HeapEdge>>();
         distance.put(source, 0.0);
         unSettledNodes.add(source);
         while (unSettledNodes.size() > 0) {
@@ -36,7 +36,14 @@ public class DijkstraAlgorithm {
                     + getDistance(node, target)) {
                 distance.put(target, getShortestDistance(node)
                         + getDistance(node, target));
-                predecessors.put(node, target);
+                if(!predecessors.containsKey(node)) {
+                    ArrayList<HeapEdge> newList = new ArrayList<HeapEdge>();
+                    newList.add(target);
+                    predecessors.put(node, newList);
+                } else {
+                    ArrayList<HeapEdge> tempList = predecessors.get(node);
+                    tempList.add(target);
+                }
                 unSettledNodes.add(target);
             }
         }
@@ -89,26 +96,6 @@ public class DijkstraAlgorithm {
         } else {
             return d;
         }
-    }
-
-    /*
-     * This method returns the path from the source to the selected target and
-     * NULL if no path exists
-     */
-    public LinkedList<HeapEdge> getPath(HeapEdge target) {
-        LinkedList<HeapEdge> path = new LinkedList<HeapEdge>();
-        HeapEdge step = target;
-        // check if a path exists
-        if (predecessors.get(step) == null) {
-            return null;
-        }
-        path.add(step);
-        while (predecessors.get(step) != null) {
-            step = predecessors.get(step);
-            path.add(step);
-        }
-
-        return path;
     }
 
 }

@@ -35,15 +35,7 @@ public class Main {
         if(start != null) {
             DijkstraAlgorithm dij = new DijkstraAlgorithm(g);
             dij.execute(start);
-            path = dij.getPath(start);
-        }
-        
-        
-        
-        
-
-        for(int i=0 ; i<path.size(); i++) {
-            System.out.println(path.get(i).source + ", " + path.get(i).dest);
+            int a = 5;
         }
     }
 }

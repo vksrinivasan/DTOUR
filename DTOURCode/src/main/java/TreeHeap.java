@@ -79,21 +79,20 @@ public class TreeHeap {
 								g.add(tempChildHeap[z], tempChildHeap[2*z+1], heapEdgeWeight_right);
 							}
 						}
+					}
 
-						// Connect every root of Ht
-						HeapEdge[] HT_temp = HtCollection.get(order.get(i)).heap;
-						int tempHTSize = HtCollection.get(order.get(i)).sizetillnow;
-						for(int z = 1; z <= tempHTSize/2; z++) {
-							if(HT_temp[2*z] != null) {
-								double HTEdgeWeight_left = HT_temp[2 * z].priority - HT_temp[z].priority;
-								g.add(HT_temp[z], HT_temp[2*z], HTEdgeWeight_left);
-							}
-							if(HT_temp[2*z+1] != null) {
-								double HTEdgeWeight_right = HT_temp[2*z+1].priority - HT_temp[z].priority;
-								g.add(HT_temp[z], HT_temp[2*z+1], HTEdgeWeight_right);
-							}
+					// Connect every root of Ht
+					HeapEdge[] HT_temp = HtCollection.get(order.get(i)).heap;
+					int tempHTSize = HtCollection.get(order.get(i)).sizetillnow;
+					for(int z = 1; z <= tempHTSize/2; z++) {
+						if(HT_temp[2*z] != null) {
+							double HTEdgeWeight_left = HT_temp[2 * z].priority - HT_temp[z].priority;
+							g.add(HT_temp[z], HT_temp[2*z], HTEdgeWeight_left);
 						}
-
+						if(HT_temp[2*z+1] != null) {
+							double HTEdgeWeight_right = HT_temp[2*z+1].priority - HT_temp[z].priority;
+							g.add(HT_temp[z], HT_temp[2*z+1], HTEdgeWeight_right);
+						}
 					}
 				}
 
