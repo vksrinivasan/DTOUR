@@ -17,6 +17,7 @@ public class TreeHeap {
 
 		for (int i = 0; i < order.size(); i++) {
 			MinHeap rootHeap = new MinHeap(100);
+			HtCollection.put(order.get(i), rootHeap);
 
 			if(!HinCollection.containsKey(order.get(i))) { HinCollection.put(order.get(i), new PathGraph.Heap_In()); }
 

@@ -4,8 +4,8 @@ import java.util.*;
 public class Main {
     public static void main(String[] args) {
 
-        int start_id = 1034;
-        int end_id = 1040;
+        int start_id = 1070;
+        int end_id = 1023;
 
         DataSource mySource = new MySqlDataSource();
         mySource.initSource();
