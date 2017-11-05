@@ -5,8 +5,8 @@ public class DistanceHeuristic implements Heuristic {
     double maxMile = 13.0;
 
     // Heuristics
-    double minCost = 0.20;
-    double maxCost = 2.00;
+    double minCost = 0.05;
+    double maxCost = 0.10;
 
     /* Let's try to map distance of curr node (src) to destination node (actual target node) to probability space */
     public double computeHeuristic(double src_long, double dest_long, double src_lat, double dest_lat) {

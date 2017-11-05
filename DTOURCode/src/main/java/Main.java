@@ -4,15 +4,14 @@ import java.util.*;
 public class Main {
     public static void main(String[] args) {
 
-        int start_id = 0;
-        int end_id = 6;
+        int start_id = 1034;
+        int end_id = 1040;
 
-        DataSource mySource = new StaticData_Implement();
-        //Heuristic myHeuristic = new NullHeuristic_Implement();
+        DataSource mySource = new MySqlDataSource();
+        mySource.initSource();
         double []NodeLongLat = mySource.getGeoList(); // We will keep longitudes/latitudes in memory (only ~1000 nodes)
         Heuristic myHeuristic = new DistanceHeuristic();
         PathGraph myPathGraph = new PathGraph();
-       // AStar myAlgo = new AStar(0,3, mySource, myHeuristic, myPathGraph);
         AStar myAlgo = new AStar(start_id,end_id, mySource, myHeuristic, myPathGraph, NodeLongLat);
 
         // Currently the A* code stops running once it finds a path to the destination - I have this while loop here

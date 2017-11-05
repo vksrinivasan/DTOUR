@@ -26,15 +26,15 @@ public class TreeHeap {
 
 					rootHeap.insert(HinCollection.get(order.get(i)).root);
 					// add crossedge every node in heap to root of source
-					HeapEdge source = HinCollection.get(i).root;
+					HeapEdge source = HinCollection.get(order.get(i)).root; // This should've been order.get(i) right?
 					int src = HinCollection.get(order.get(i)).root.source;
-					HeapEdge destination = HinCollection.get(src).root;
+					HeapEdge destination = HinCollection.get(src).root; // Need to handle the possibility that this doesn't exist
 					double weight = destination.priority;
 
 					g.add(source, destination, weight, order.get(i), src);
 
 					// add heapEdge-pointers to children
-					HeapEdge heapEdgeDestination = HinCollection.get(order.get(i)).children.heap[1];
+					HeapEdge heapEdgeDestination = HinCollection.get(order.get(i)).children.heap[1]; // Need to handle possibility that this doesn't exist
 					double heapEdgeweight = heapEdgeDestination.priority - source.priority;
 
 					g.add(source, heapEdgeDestination, heapEdgeweight, order.get(i), order.get(i));

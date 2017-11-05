@@ -33,7 +33,7 @@ public class PathUtils {
                 // if you are just between two heap edge nodes, then you need to backtrack from the source of the
                 // later one to the destination of the previous one
                 else {
-                    HeapEdge ePrevious = currPathEdges.get(j - 1);
+                    HeapEdge ePrevious = currPathEdges.get(j);
                     targetVertex = ePrevious.dest;
                     finalPathNodes.addAll(backTrack(currVertex, targetVertex, astar_sp_tree));
                     currVertex = ePrevious.source;
