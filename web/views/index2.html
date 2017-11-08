@@ -60,6 +60,8 @@
 			/*
 			to do:
 			add location capability
+			animation while setting center after each location update interval?
+			add the capability of manually entering source location if user doesn't want to share their location
 			*/
 			
 			LOC_UPDATE_INTERVAL = 10000;
@@ -83,6 +85,8 @@
 			directionsDisplays = [];
 
 			map = null;
+
+			already_warned = false;
 
 			function initMap() {
 				ny_center = new google.maps.LatLng(40.730610, -73.935242);
@@ -191,7 +195,8 @@
 						disp('location marker updated');
 						map.setCenter(current_location);
 
-						setTimeout( () => {show_current_location();}, LOC_UPDATE_INTERVAL);
+						// setTimeout( () => {show_current_location();}, LOC_UPDATE_INTERVAL);
+						show_current_location();
 					}
 				})
 			}
@@ -283,7 +288,10 @@
 					disp(current_location);
 					showRoute([[current_location, this.destinationPlaceLatLng]], this.map); this.map.setCenter(current_location);
 				} else {
-					window.alert("Please enable location services :)");
+					if (!already_warned) {
+						window.alert("Please enable location services.");
+						already_warned = true;
+					}
 					AutocompleteDirectionsHandler.prototype.route();
 				}
 				// var me = this;
