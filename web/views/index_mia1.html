@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script type="text/javascript" src="/javascript/jquery.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBHQZoJ1IkC36Hm9-nkdyE7wj8vjS3ZcC4&callback=initMap&libraries=places" async defer></script>
+
+	<title>DVA Project :P</title>
+	<meta name="viewport" content="initial-scale=1.0"><!--  , user-scalable=no -->
+	<meta charset="utf-8">
+	<style>
+		/* Always set the map height explicitly to define the size of the div
+         * element that contains the map. */
+		#map {
+			height: 100%;
+
+		}
+		/* Optional: Makes the sample page fill the window. */
+		html, body {
+			height: 100%;
+			margin: 0;
+			padding: 0;
+		}
+		/*Style Class for origin and destination field*/
+		.controls {
+			margin-top: 10px;
+			border: 1px solid transparent;
+			border-radius: 2px 0 0 2px;
+			box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			height: 32px;
+			outline: none;
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+		}
+		#origin-input,
+		#destination-input {
+			background-color: #fff;
+			font-family: Roboto;
+			font-size: 15px;
+			font-weight: 300;
+			margin-left: 12px;
+			padding: 0 11px 0 13px;
+			text-overflow: ellipsis;
+			width: 200px;
+		}
+		#origin-input:focus,
+		#destination-input:focus {
+			border-color: #4d90fe;
+		}
+	</style>
+</head>
+<body>
+<input id="origin-input" class="controls" type="text"
+	   placeholder="Enter an origin location">
+
+<input id="destination-input" class="controls" type="text"
+	   placeholder="Enter a destination location">
+<div id="map"></div>
+<script>
+    // our own functions below
+    var ny_center = null;
+    var my_home = null;
+
+    var source = null;
+    // console.log("origin", source);
+    var mid1 = null;
+    var mid2 = null;
+    var dest = null;
+    // console.log("dest", dest);
+
+    var directionsService = null;
+    var markerImage = null;
+
+    var map = null;
+
+    function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+        //infoWindow.setPosition(pos);
+        //infoWindow.setContent(browserHasGeolocation ?
+            //'Error: The Geolocation service failed.' :
+            //'Error: Your browser doesn\'t support geolocation.');
+    }
+
+    function initMap() {
+/*        ny_center = new google.maps.LatLng(40.730610, -73.935242);
+        my_home = new google.maps.LatLng(33.782115, -84.406469);
+
+        source = new google.maps.LatLng(33.778423, -84.401361);
+        // console.log("origin", source);
+        mid1 = new google.maps.LatLng(33.781437, -84.386941);
+        mid2 = new google.maps.LatLng(33.771295, -84.395013)
+        dest = new google.maps.LatLng(33.772245, -84.384906);*/
+        markerImage = 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png';
+
+        var mapOptions = {
+            center: source,
+            zoom: 15,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+            // 1: World
+            // 5: Landmass/continent
+            // 10: City
+            // 15: Streets
+            // 20: Buildings
+
+
+        };
+        map = new google.maps.Map(document.getElementById('map'), mapOptions);
+        var infoWindow = new google.maps.InfoWindow({map: map});
+        var position = null;
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                pos = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                new AutocompleteDirectionsHandler(map, pos);
+                console.log("pos:", pos);
+            }, function() {
+                handleLocationError(true, infoWindow, map.getCenter());
+            });
+        } else {
+            // Browser doesn't support Geolocation
+            handleLocationError(false, infoWindow, map.getCenter());
+			console.log("Position not available");
+            new AutocompleteDirectionsHandler(map, null);
+        }
+
+    }
+
+    function disp(a_) {
+        console.log(a_);
+    }
+    /*
+    1) search for destination*/
+    function AutocompleteDirectionsHandler(map, position) {
+
+        this.map = map;
+        this.originPlaceId = null;
+        this.originPlaceLatLng= null;
+        this.destinationPlaceLatLng= null;
+        this.travelMode = 'WALKING';
+        var originInput = document.getElementById('origin-input');
+        var destinationInput = document.getElementById('destination-input');
+        this.directionsService = new google.maps.DirectionsService;
+        this.directionsDisplay = [];
+        this.startMarker = new google.maps.Marker;
+        this.destMarker = new google.maps.Marker;
+
+        if(typeof position != null){
+            this.originPlaceLatLng =position;
+            this.map.setCenter(this.originPlaceLatLng);
+            this.setmarker('ORIG');
+            console.log("new origin", me.originPlaceLatLng);
+		}
+
+        var originAutocomplete = new google.maps.places.Autocomplete(
+            originInput, {placeIdOnly: false});
+
+        var destinationAutocomplete = new google.maps.places.Autocomplete(
+            destinationInput, {placeIdOnly: false});
+
+        this.setupPlaceChangedListener(originAutocomplete, 'ORIG');
+        this.setupPlaceChangedListener(destinationAutocomplete, 'DEST');
+
+        this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(originInput);
+        this.map.controls[google.maps.ControlPosition.TOP_LEFT].push(destinationInput);
+    }
+
+    AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function(autocomplete, mode) {
+        var me = this;
+        autocomplete.bindTo('bounds', this.map);
+        autocomplete.addListener('place_changed', function() {
+            var place = autocomplete.getPlace();
+            var long = place.geometry.location.lng();
+            var lat = place.geometry.location.lat();
+            console.log("longitude:", long, "latitude:", lat);
+            if (!place.place_id) {
+                window.alert("Please select an option from the dropdown list.");
+                return;
+            }
+            if (mode === 'ORIG') {
+                me.originPlaceId = place.place_id;
+                me.originPlaceLatLng = place.geometry.location;
+                me.map.setCenter(me.originPlaceLatLng);
+                me.setmarker(mode)
+                console.log("new origin", me.originPlaceLatLng);
+            } else {
+                me.destinationPlaceId = place.place_id;
+                me.destinationPlaceLatLng= place.geometry.location;
+                me.setmarker(mode)
+                console.log("new dest", me.destinationPlaceLatLng);
+            }
+            me.route();
+        });
+
+    };
+    AutocompleteDirectionsHandler.prototype.setmarker = function(mode) {
+		me = this;
+		console.log("mode:", mode)
+        markerImage = 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png';
+
+        if (mode == 'ORIG') {
+            me.startMarker.setMap(null);
+            me.startMarker = new google.maps.Marker( {
+                // position: new google.maps.LatLng(lat_, lng_),
+                position: me.originPlaceLatLng,
+                map: me.map,
+                //icon: markerImage,
+                //animation: google.maps.Animation.DROP
+            } );
+            var newInfoWindow = new google.maps.InfoWindow({
+                content: "<b>Start</b>"});
+            newInfoWindow.open(me.map, me.startMarker);
+        } else{
+            me.destMarker.setMap(null);
+            me.destMarker = new google.maps.Marker( {
+                // position: new google.maps.LatLng(lat_, lng_),
+                position: me.destinationPlaceLatLng,
+                map: me.map,
+                //icon: markerImage,
+                //animation: google.maps.Animation.DROP
+            } );
+            var newInfoWindow = new google.maps.InfoWindow({
+                content: "<b>Destination</b>"});
+            newInfoWindow.open(me.map, me.destMarker);
+		}
+    };
+
+
+    AutocompleteDirectionsHandler.prototype.route = function() {
+        if (!this.originPlaceLatLng || !this.destinationPlaceLatLng) {
+            return;
+        }
+        var me = this;
+
+        for(var i=0; i<me.directionsDisplay.length; i++) {
+            me.directionsDisplay[i].setMap(null);
+        }
+        var color_dict = {0: "green", 1: "orange", 2: "red"};
+        mid1 = new google.maps.LatLng(33.781437, -84.386941);
+        paths = [[me.originPlaceLatLng, me.destinationPlaceLatLng], [me.originPlaceLatLng, mid1, me.destinationPlaceLatLng]];
+		console.log(paths);
+        console.log(me.directionsDisplay);
+
+        paths.forEach( (path, index) => {
+            for(var i = 0; i < path.length - 1;i++){
+            	var request = {
+                	origin: path[i],
+                	destination: path[i+1],
+                	travelMode: google.maps.TravelMode["DRIVING"]
+            	};
+            	me.directionsService.route(request, function(response, status) {
+                if (status === 'OK') {
+                    me.directionsDisplay.push(new google.maps.DirectionsRenderer({preserveViewport: true, suppressMarkers: true, polylineOptions: {strokeColor: color_dict[index]} }));
+                    me.directionsDisplay[me.directionsDisplay.length-1].setMap(me.map);
+                    me.directionsDisplay[me.directionsDisplay.length-1].setDirections(response);
+                } else {
+                    window.alert('Directions request failed due to ' + status);
+                }
+            });
+
+        	}
+    	})
+    };
+
+    /*2) current location and centering the map according to that
+    3)
+    end) navitation/directions for the end
+    */
+    {
+        // function addLine(coords_, map_) {
+        // 	/*adding a simple line
+        // 	coords_ is in the form of lat1, lng1, lat2, lng2, lat3, lng3 ...
+        // 	sample call:
+
+        // 	var my_home = new google.maps.LatLng(33.782115, -84.406469);
+        // 	addLine([my_home.lat(), my_home.lng(), my_home.lat(), my_home.lng()+0.003, my_home.lat(), my_home.lng()+0.006], map);*/
+
+        // 	objectsArray = [];
+        // 	for (var i = 0; i < coords_.length; i=i+2) {
+        // 		objectsArray.push({lat: coords_[i], lng: coords_[i+1]});
+        // 	}
+
+        // 	var line = new google.maps.Polyline({
+        // 		path: objectsArray,
+        // 		geodesic: true,
+        // 		strokeColor: '#FF0000',
+        // 		strokeOpacity: 1.0,
+        // 		strokeWeight: 2
+        // 	});
+
+        // 	line.setMap(map_);
+        // }
+
+
+
+        // var request2 = {
+        // 	origin: dest,
+        // 	destination: dest2,
+        // 	travelMode: google.maps.TravelMode["DRIVING"]
+        // };
+        // directionsService.route(request2, (response, status) => {
+        // 	if (status == 'OK') {
+        // 		var directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true, suppressMarkers: true, polylineOptions: {strokeColor: "blue"} });
+        // 		directionsDisplay.setMap(map);
+        // 		directionsDisplay.setDirections(response);
+        // 	}
+        // });
+
+        // var request = {
+        // 	origin: source,
+        // 	destination: dest,
+        // 	travelMode: google.maps.TravelMode["DRIVING"]
+        // };
+        // directionsService.route(request, (response, status) => {
+        // 	if (status == 'OK') {
+        // 		var directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true, suppressMarkers: true, polylineOptions: {strokeColor: "red"} });
+        // 		directionsDisplay.setMap(map);
+        // 		directionsDisplay.setDirections(response);
+        // 	}
+        // });
+    }
+</script>
+</body>
+</html>
