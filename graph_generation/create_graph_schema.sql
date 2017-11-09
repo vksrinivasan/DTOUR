@@ -13,7 +13,7 @@ CREATE INDEX adj_dest_index on adj_edge(dest_node_id);
 CREATE TABLE IF NOT EXISTS transition_group(id INTEGER PRIMARY KEY AUTO_INCREMENT, name VARCHAR(60) UNIQUE);
 
 CREATE TABLE IF NOT EXISTS transition_period(id INTEGER PRIMARY KEY AUTO_INCREMENT, 
-	transition_group_id INTEGER, month INTEGER, year INTEGER, taxi_type VARCHAR(20),
+	transition_group_id INTEGER, month INTEGER, year INTEGER, weight REAL DEFAULT 1, taxi_type VARCHAR(20),
 	FOREIGN KEY(transition_group_id) REFERENCES transition_group(id),
 	UNIQUE(transition_group_id, month, year, taxi_type));
 
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS transition_graph(id INTEGER PRIMARY KEY AUTO_INCREMEN
 
 CREATE TABLE IF NOT EXISTS transition_edge(id INTEGER PRIMARY KEY AUTO_INCREMENT,
 	transition_graph_id INTEGER, src_node_id INTEGER, 
-	dest_node_id INTEGER, weight INTEGER,
+	dest_node_id INTEGER, weight REAL,
 	FOREIGN KEY(transition_graph_id) REFERENCES transition_graph(id),
 	FOREIGN KEY(src_node_id) REFERENCES node(id),
 	FOREIGN KEY(dest_node_id) REFERENCES node(id));

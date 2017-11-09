@@ -17,7 +17,7 @@ num_tables=`mysql --login-path='dtour' -D $db <<<"SELECT COUNT(*) FROM informati
 num_tables=`echo $num_tables | egrep -o '[0-9]+'`
 
 if [ "$num_tables" -eq 0 ]; then
-	mysql --login-path='dtour' -D $db < $ROOT_DIR/graph_generation/create_graph_schema.sql
+	mysql --login-path='dtour' -h $host -D $db < $ROOT_DIR/graph_generation/create_graph_schema.sql
 	python $ROOT_DIR/graph_generation/adjacency/generate_adj_graph.py
 fi
 
@@ -40,4 +40,6 @@ do
 		rm $DOWNLOAD_FILE
 	done
 done
+
+# python -W ignore $ROOT_DIR/graph_generation/transition/generate_transition_graph.py $INTERVAL_LENGTH $ROOT_DIR/data/nyc_gov_trip_data/yellow_tripdata_2016-03_min.csv
 
