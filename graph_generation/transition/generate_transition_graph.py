@@ -12,6 +12,7 @@ import numpy as np
 from pyspark import SparkContext
 
 from mysql_util import Connector
+from quantization import Quantizer
 
 # Outline
 # main function: reads csv
@@ -54,10 +55,7 @@ def filter_trip_graph(entry, transition_group_id, interval_length):
     return True
 
 
-def generate_trip_graph(entry, header, connector):
-    from quantization import Quantizer
-
-    quantizer = Quantizer(connector)
+def generate_trip_graph(entry, header, quanitzer, connector):
     trip_graph = np.zeros((quantizer.num_nodes(), quantizer.num_nodes()), dtype=np.int)
 
     pu_lat_index = header.index('pickup_latitude')
@@ -89,13 +87,10 @@ def generate_trip_graph(entry, header, connector):
     return key, trip_graph
 
 
-def write_trip_graph(entry, transition_group_id, interval_length, connector):
-    from quantization import Quantizer
-
+def write_trip_graph(entry, transition_group_id, interval_length, quantizer, connector):
     interval_index = entry[0]
     trip_graph = entry[1]
 
-    quantizer = Quantizer(connector)
     # outbound_degrees = trip_graph.sum(axis = 1)
     # transition_probabilities = trip_graph.astype(np.float) / outbound_degrees[:, np.newaxis]
     # transition_probabilities = np.nan_to_num(transition_probabilities) # Replace nans with 0's
@@ -178,8 +173,6 @@ def _get_transition_group_id(transition_group_name, connector):
 
 
 if __name__ == '__main__':
-    from quantization import Quantizer
-
     argv = sys.argv
 
     interval_length = int(argv[1])
@@ -227,6 +220,6 @@ if __name__ == '__main__':
             .filter(lambda row: row is not None) \
             .groupByKey() \
             .filter(lambda entry: filter_trip_graph(entry, transition_group_id, interval_length)) \
-            .map(lambda entry: generate_trip_graph(entry, header, connector)) \
-            .map(lambda entry: write_trip_graph(entry, transition_group_id, interval_length, connector)) \
+            .map(lambda entry: generate_trip_graph(entry, header, quantizer, connector)) \
+            .map(lambda entry: write_trip_graph(entry, transition_group_id, interval_length, quantizer, connector)) \
             .collect()
