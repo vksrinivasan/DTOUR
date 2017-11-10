@@ -11,7 +11,7 @@ import MySQLdb
 import numpy as np
 from pyspark import SparkContext
 
-from quantization import Quantizer
+from mysql_util import Connector
 
 # Outline
 # main function: reads csv
@@ -55,6 +55,8 @@ def filter_trip_graph(entry, transition_group_id, interval_length):
 
 
 def generate_trip_graph(entry, header, connector):
+    from quantization import Quantizer
+
     quantizer = Quantizer(connector)
     trip_graph = np.zeros((quantizer.num_nodes(), quantizer.num_nodes()), dtype=np.int)
 
@@ -88,6 +90,8 @@ def generate_trip_graph(entry, header, connector):
 
 
 def write_trip_graph(entry, transition_group_id, interval_length, connector):
+    from quantization import Quantizer
+
     interval_index = entry[0]
     trip_graph = entry[1]
 
@@ -174,18 +178,22 @@ def _get_transition_group_id(transition_group_name, connector):
 
 
 if __name__ == '__main__':
-    from mysql_util import Connector
+    from quantization import Quantizer
 
-    interval_length = int(sys.argv[1])
+    argv = sys.argv
 
-    data_path = sys.argv[2]
-    if os.path.isfile(data_path):
-        data_files = [data_path]
-    elif os.path.isdir(data_path):
+    interval_length = int(argv[1])
+
+    data_path = argv[2]
+    # if os.path.isfile(data_path):
+    #     data_files = [data_path]
+    if os.path.isdir(data_path):
         data_files = [os.path.join(data_path, data_file_name) for data_file_name in os.listdir(data_path)]
         data_files = [data_file for data_file in data_files if os.path.isfile(data_file)]
     else:
-        raise ValueError('{} is not a valid file path'.format(data_path))
+        data_files = [data_path]
+    # else:
+    #     raise ValueError('{} is not a valid file path'.format(data_path))
 
 
     script_dir = os.path.split(os.path.realpath(__file__))[0]
@@ -200,7 +208,8 @@ if __name__ == '__main__':
 
         transition_group_id = _get_transition_group_id(transition_group_name, connector)
 
-        sc = SparkContext("local", "Transition Graph", pyFiles=pyFiles)
+        sc = SparkContext(appName='transition_graph')
+
         taxi_data = sc.textFile(data_file) \
             .map(lambda row: row.split(',')) \
             .filter(lambda row: len(row) > 1)

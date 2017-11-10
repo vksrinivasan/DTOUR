@@ -22,8 +22,12 @@ public class MySqlDataSource implements DataSource {
     public void initSource() {
         connectionParams = loadConnectionParams();
 
+        Properties props = new Properties();
+        props.setProperty("user", connectionParams.user);
+        props.setProperty("password", connectionParams.password);
+
         ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(String.format("jdbc:mysql://%s/%s",
-                connectionParams.host, connectionParams.db), connectionParams.user, connectionParams.password);
+                connectionParams.host, connectionParams.db), props);
         PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(connectionFactory, null);
         GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
         poolableConnectionFactory.setPool(connectionPool);
@@ -52,7 +56,7 @@ public class MySqlDataSource implements DataSource {
                     String.format("where transition_graph_id=%s AND src_node_id=%s", transitionGraphId, source));
             while (resultSet.next()) {
                 int dest = resultSet.getInt("dest_node_id");
-                int weight = resultSet.getInt("weight");
+                double weight = resultSet.getDouble("weight");
                 weightSum += weight;
                 EdgeData edgeData = new EdgeData(source, dest, weight);
                 edgeDataMap.put(dest, edgeData);
@@ -62,7 +66,7 @@ public class MySqlDataSource implements DataSource {
                     String.format("where src_node_id=%s", source));
             while (resultSet.next()) {
                 int dest = resultSet.getInt("dest_node_id");
-                int weight = 1;
+                double weight = 1.0;
                 weightSum += weight;
 
                 EdgeData edgeData = edgeDataMap.get(dest);
@@ -164,6 +168,7 @@ public class MySqlDataSource implements DataSource {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT id from transition_group " +
                     String.format("where name=\'%s\'", TRANSITION_GROUP_NAME));
+
             resultSet.next();
             int transitionGroupId = resultSet.getInt("id");
 

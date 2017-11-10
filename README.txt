@@ -32,7 +32,7 @@ sudo apt-get install libmysqlclient-dev
 sudo pip install MySql-python
 
 2. Set up an automatic password when accessing the host. Be sure to include the quotation marks around the password when prompted.
-mysql_config_editor set -G dtour -h <host_name> -u dtour -p
+mysql_config_editor set -G dtour -u dtour -p
 >> '<Password Here>'  
 
 3. Now you can access the database through shell with the following command.
