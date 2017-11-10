@@ -29,6 +29,19 @@ class Quantizer():
         pass
 
 
+    def __getstate__(self):
+        """Return state values to be pickled."""
+        print 'pickling'
+        return (self.nodes, )
+
+
+    def __setstate__(self, state):
+        """Restore state from the unpickled state values."""
+        print 'unpickling'
+        (self.nodes,) = state
+        self.__build_tree()
+
+
     def query(self, lat, long, k=1):
         result = self.query((lat, long), k)
         return result[0]
