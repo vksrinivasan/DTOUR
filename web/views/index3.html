@@ -101,10 +101,12 @@
 
 			already_warned = false;
 			source_manually_set = false;
+			route_shown = false;
+			first_time = true;
 
-			function sourceAutomatic() {
-				source_manually_set = false;
-			}
+			// function sourceAutomatic() {
+			// 	source_manually_set = false;
+			// }
 
 			// function showStatus(new_) {
 			// 	document.getElementById("status").innerHTML = new_;
@@ -199,6 +201,7 @@
 					marker = [];
 					markers.push(addMarker(destMarkerAttrs, map, google.maps.Animation.DROP));
 					markers.push(addMarker(sourceMarkerAttrs, map, google.maps.Animation.DROP));
+					route_shown = true;
 				})
 				// map_.setCenter(paths_[0][0]);
 			}
@@ -207,19 +210,66 @@
 				var loc_promise = get_location_promisified();
 				loc_promise.then(pos => {
 					if (pos!=null) {
-						if (current_loc_marker!=null)
+						if (current_loc_marker!=null) {
 							current_loc_marker.setMap(null);
+						}
 
 						current_location = pos;
-						var currentLocMarkerAttrs = {coords: pos, iconImage: curLocImage};
-						current_loc_marker = addMarker(currentLocMarkerAttrs, map);
-						map.setCenter(current_location);
+						var obj = {
+							path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+							strokeColor : '#3333FF',
+							strokeWeight : 5,
+							scale: 2.5
+						}
+
+						// commented this part to add the functionality of orientation of the device
+						// var currentLocMarkerAttrs = {coords: pos, iconImage: curLocImage};
+						// current_loc_marker = addMarker(currentLocMarkerAttrs, map);
+
+						if (first_time) {
+							first_time = false;
+							map.setCenter(current_location);
+						}
+						
+						if (route_shown) {
+							map.setCenter(current_location);
+						}
 
 						if (!source_manually_set) {
 							source = current_location;
 						}
 						// setTimeout( () => {show_current_location();}, LOC_UPDATE_INTERVAL);
 						show_current_location();
+
+						current_loc_marker = new google.maps.Marker({
+							position: pos,
+							clickable : false,
+							icon: {
+								path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+								strokeColor : '#3333FF',
+								strokeWeight : 5,
+								scale: 2.5
+							},
+							shadow : null,
+							zIndex : 999,
+							// title : genProps.pMyLocationTitle,
+							map: map
+						});
+						
+						if (window.DeviceOrientationEvent) {
+							window.addEventListener('deviceorientation', function(event) {
+								var alpha = null;
+								if (event.webkitCompassHeading) { // Check for iOS property
+									alpha = event.webkitCompassHeading;
+								}
+								else { // non iOS
+									alpha = event.alpha;
+								}
+								var locationIcon = current_loc_marker.get('icon');
+								locationIcon.rotation = 360 - alpha;
+								current_loc_marker.set('icon', locationIcon);
+							}, false);
+						}
 					}
 				})
 			}
