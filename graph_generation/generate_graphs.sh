@@ -69,7 +69,7 @@ done
 # 	$ROOT_DIR/graph_generation/transition/generate_transition_graph.py \
 # 	$INTERVAL_LENGTH $ROOT_DIR/data/nyc_gov_trip_data/yellow_tripdata_2014-01.csv
 
-# spark-submit --master yarn-client --deploy-mode client \
+# spark-submit --master yarn --deploy-mode client \
 # 	--py-files="$ROOT_DIR/graph_generation/transition/quantization.py,$ROOT_DIR/graph_generation/mysql_util.py" \
 # 	$ROOT_DIR/graph_generation/transition/generate_transition_graph.py \
 # 	$INTERVAL_LENGTH data/nyc_gov_trip_data/yellow_tripdata_2014-01.csv
