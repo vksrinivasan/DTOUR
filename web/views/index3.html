@@ -53,9 +53,11 @@
 				border-color: #4d90fe;
 			}
 			#title-class {
-				color: black;
-				font-family: "Candara", Times, Helvetica;
-				position: absolute;
+				/*color: black;*/
+				width: 100px;
+				height: 100px;
+				/*font-family: "Candara", Times, Helvetica;*/
+				/*position: absolute;*/
 			}
 		</style>
 	</head>
@@ -327,10 +329,16 @@
 				this.map.controls[google.maps.ControlPosition.LEFT_TOP].push(originInput);
 				this.map.controls[google.maps.ControlPosition.LEFT_TOP].push(destinationInput);
 
-				var myTitle = document.createElement('h1');
+				// var myTitle = document.createElement('h1');
+				// myTitle.class = 'title-class';
+				// myTitle.innerHTML = 'DTOUR';
+
+				var myTitle = document.createElement('img');
 				myTitle.class = 'title-class';
-				myTitle.innerHTML = 'DTOUR';
+				myTitle.src = 'https://image.ibb.co/crj9YG/rsz_logo_padded.png';
 				var myTextDiv = document.createElement('div');
+				myTextDiv.height = "100";
+				myTextDiv.width = "100";
 				myTextDiv.appendChild(myTitle);
 				this.map.controls[google.maps.ControlPosition.TOP_CENTER].push(myTextDiv);
 			}
