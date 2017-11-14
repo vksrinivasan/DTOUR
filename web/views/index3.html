@@ -123,7 +123,8 @@
 
 				directionsService = new google.maps.DirectionsService();
 				
-				curLocImage = 'https://image.ibb.co/mYA2qw/rsz_2loc.png';
+				// curLocImage = 'https://image.ibb.co/mYA2qw/rsz_2loc.png';
+				curLocImage = 'https://image.ibb.co/cadGVw/loc2.png';
 
 				var mapOptions = {
 					center: center,
@@ -184,7 +185,7 @@
 						// coords: new google.maps.LatLng(source.lat(), source.lng()),
 						coords: paths_[0][0],
 						// iconImage: markerImage,
-						content: "<b>Source</b>"
+						// content: "<b>Source</b>"
 					}
 
 					var destMarkerAttrs = {
@@ -193,7 +194,7 @@
 						// coords: new google.maps.LatLng(dest.lat(), dest.lng()),
 						coords: paths_[0][paths_[0].length-1],
 						// iconImage: markerImage,
-						content: "<b>Destination</b>"
+						// content: "<b>Destination</b>"
 					}
 					markers.forEach(marker => {
 						marker.setMap(null);
@@ -222,10 +223,6 @@
 							scale: 2.5
 						}
 
-						// commented this part to add the functionality of orientation of the device
-						// var currentLocMarkerAttrs = {coords: pos, iconImage: curLocImage};
-						// current_loc_marker = addMarker(currentLocMarkerAttrs, map);
-
 						if (first_time) {
 							first_time = false;
 							map.setCenter(current_location);
@@ -241,7 +238,12 @@
 						// setTimeout( () => {show_current_location();}, LOC_UPDATE_INTERVAL);
 						show_current_location();
 
-						current_loc_marker = new google.maps.Marker({
+						// commented this part to add the functionality of orientation of the device
+						var currentLocMarkerAttrs = {coords: pos, iconImage: curLocImage};
+						current_loc_marker = addMarker(currentLocMarkerAttrs, map);
+
+						// code for orientation of device
+						/*current_loc_marker = new google.maps.Marker({
 							position: pos,
 							clickable : false,
 							icon: {
@@ -269,7 +271,7 @@
 								locationIcon.rotation = 360 - alpha;
 								current_loc_marker.set('icon', locationIcon);
 							}, false);
-						}
+						}*/
 					}
 				})
 			}
