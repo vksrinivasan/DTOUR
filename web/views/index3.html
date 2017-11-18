@@ -2,6 +2,7 @@
 <html>
 	<head>
 		<!-- <script type="text/javascript" src="/javascript/jquery.js"></script> -->
+		<script src="/socket.io/socket.io.js"></script>
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCyMnGTBpsAICBI4KJ82h_LqtHG6SrbCi8&callback=initMap&libraries=places" async defer></script>
 
 		<title>DTOUR</title>
@@ -106,6 +107,9 @@
 			route_shown = false;
 			first_time = true;
 
+			backend_server = null;
+			backend_port = 3001;
+
 			// function sourceAutomatic() {
 			// 	source_manually_set = false;
 			// }
@@ -142,8 +146,27 @@
 				map = new google.maps.Map(document.getElementById('map'), mapOptions);
 				new AutocompleteDirectionsHandler(map);
 				show_current_location();
-
 				// setTimeout(() => {showRoute([[source, mid1, dest], [source, mid2, dest]], map);map.setCenter(source);}, 1500);
+
+				backend_server = io('http://localhost:' + backend_port);
+				backend_server.on('connect', () => {
+					disp("Connected with the backend server");
+					// backend_server.emit("hw", "hello world");
+				});
+
+				backend_server.on('disconnect', () => {
+					disp("Disconnected with the backend server");
+					window.alert("Disconnected with the route calculating server. Please check your Internet connection & refresh the page.");
+				});
+
+				backend_server.on("paths", paths_arr => {
+					var num_paths = paths_arr.length;
+					if (num_paths==0) {
+						showRoute([[source, destination]], map);
+					} else {
+						showRoute(paths_arr, map);
+					}
+				})
 			}
 
 			function showRoute(paths_, map_) {
@@ -381,9 +404,12 @@
 					}
 					AutocompleteDirectionsHandler.prototype.route();
 				} else {
-					disp("Send (source, destination) to the backend server here.");
-					showRoute([[source, destination]], map); 
+					// Send (source, destination) to the backend server here
+					backend_server.emit("query", [source, destination]);
 					map.setCenter(current_location);
+					
+					// comment this when the backend starts sending reasonable data.
+					showRoute([[source, destination]], map);
 				}
 				// var me = this;
 				// showRoute([[this.originPlaceLatLng, this.destinationPlaceLatLng]], this.map); this.map.setCenter(this.originPlaceLatLng);

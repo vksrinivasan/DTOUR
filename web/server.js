@@ -34,7 +34,7 @@ app.use(express.static(path.join(__dirname, static_dir)))
 
 app.get('*', (req, res) => {
 	if (req.url==='/') {
-		res.send(fs.readFileSync('./views/index3.html', 'utf8'))
+		res.send(fs.readFileSync('./views/index4_change_padding_and_layout.html', 'utf8'))
 	}
 })
 
