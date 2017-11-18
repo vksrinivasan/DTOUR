@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script type="text/javascript" src="/javascript/jquery.js"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCyMnGTBpsAICBI4KJ82h_LqtHG6SrbCi8&callback=initMap&libraries=places" async defer></script>
+
+		<title>DVA Project :P</title>
+		<meta name="viewport" content="initial-scale=1.0"><!--  , user-scalable=no -->
+		<meta charset="utf-8">
+		<style>
+			/* Always set the map height explicitly to define the size of the div
+			 * element that contains the map. */
+			#map {
+				height: 100%;
+
+			}
+			/* Optional: Makes the sample page fill the window. */
+			html, body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			/*Style Class for origin and destination field*/
+			.controls {
+				margin-top: 10px;
+				border: 1px solid transparent;
+				border-radius: 2px 0 0 2px;
+				box-sizing: border-box;
+				-moz-box-sizing: border-box;
+				height: 32px;
+				outline: none;
+				box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+			}
+			#origin-input,
+			#destination-input {
+				background-color: #fff;
+				font-family: Roboto;
+				font-size: 15px;
+				font-weight: 300;
+				margin-left: 12px;
+				margin-right: 12px;
+				/*padding: 0 11px 0 13px;*/
+				text-overflow: ellipsis;
+				width: 100%;
+			}
+			#origin-input:focus,
+			#destination-input:focus {
+				border-color: #4d90fe;
+			}
+		</style>
+	</head>
+	<body>
+		<!-- <input id="origin-input" class="controls" type="text"
+			   placeholder="Enter your origin"> -->
+
+		<input id="destination-input" class="controls" type="text"
+			   placeholder="Enter your destination">
+		<div id="map"></div>
+		<script>
+			/*
+			to do:
+			add location capability
+			animation while setting center after each location update interval?
+			add the capability of manually entering source location if user doesn't want to share their location
+			*/
+			
+			LOC_UPDATE_INTERVAL = 10000;
+
+			ny_center = null;
+			my_home = null;
+
+			center = null;
+			mid1 = null;
+			mid2 = null;
+
+			source = null;
+			dest = null;
+
+			directionsService = null;
+			curLocImage = null;
+
+			current_location = null;
+			current_loc_marker = null;
+			markers = [];
+			directionsDisplays = [];
+
+			map = null;
+
+			already_warned = false;
+
+			function initMap() {
+				ny_center = new google.maps.LatLng(40.730610, -73.935242);
+				my_home = new google.maps.LatLng(33.782115, -84.406469);
+
+				center = new google.maps.LatLng(33.778423, -84.401361);
+				mid1 = new google.maps.LatLng(33.781437, -84.386941);
+				mid2 = new google.maps.LatLng(33.771295, -84.395013)
+				dest = new google.maps.LatLng(33.772245, -84.384906);
+
+				directionsService = new google.maps.DirectionsService();
+				
+				curLocImage = 'https://image.ibb.co/mYA2qw/rsz_2loc.png';
+
+				var mapOptions = {
+					center: center,
+					zoom: 15,
+					mapTypeId: google.maps.MapTypeId.ROADMAP
+					// 1: World
+					// 5: Landmass/continent
+					// 10: City
+					// 15: Streets
+					// 20: Buildings
+				}
+
+				map = new google.maps.Map(document.getElementById('map'), mapOptions);
+				new AutocompleteDirectionsHandler(map);
+				show_current_location();
+
+				// setTimeout(() => {showRoute([[source, mid1, dest], [source, mid2, dest]], map);map.setCenter(source);}, 1500);
+			}
+
+			function showRoute(paths_, map_) {
+				/*
+				paths_ is an array of arrays where the arrays are multiple paths () and |arrays| <= 3
+				e.g. paths_ = [[source, mid1, mid2, dest], [source, mid3, mid4, dest], [source, mid5, mid6, dest]];
+				*/
+
+				// Erase old routes
+				directionsDisplays.forEach(dd => {
+					dd.setMap(null);
+				})
+				directionsDisplays = [];
+
+				//Show new routes
+				var color_dict = {0: "green", 1: "orange", 2: "red"};
+				paths_.forEach( (path, index) => {
+					// path is of the format [source, mid1, mid2, dest]
+					// where each entry is a google.maps.LatLng() object
+
+					for (var i = 0; i < path.length - 1; i++) {
+						var request = {
+							origin: path[i],
+							destination: path[i+1],
+							travelMode: google.maps.TravelMode["DRIVING"]
+						};
+						directionsService.route(request, (response, status) => {
+							if (status == 'OK') {
+								var new_directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true, suppressMarkers: true, polylineOptions: {strokeColor: color_dict[index]} });
+								new_directionsDisplay.setMap(map_);
+								new_directionsDisplay.setDirections(response);
+								directionsDisplays.push(new_directionsDisplay);
+							} else {
+								disp("status not OK in showRoute. Status: " + status);
+							}
+						});
+					}
+					var sourceMarkerAttrs = {
+						/*coords can also be
+						coords: {lat: my_home.lat(), lng: my_home.lng()},*/
+						// coords: new google.maps.LatLng(source.lat(), source.lng()),
+						coords: paths_[0][0],
+						// iconImage: markerImage,
+						content: "<b>Source</b>"
+					}
+
+					var destMarkerAttrs = {
+						/*coords can also be
+						coords: {lat: my_home.lat(), lng: my_home.lng()},*/
+						// coords: new google.maps.LatLng(dest.lat(), dest.lng()),
+						coords: paths_[0][paths_[0].length-1],
+						// iconImage: markerImage,
+						content: "<b>Destination</b>"
+					}
+					markers.forEach(marker => {
+						marker.setMap(null);
+					});
+					marker = [];
+					markers.push(addMarker(destMarkerAttrs, map, google.maps.Animation.DROP));
+					markers.push(addMarker(sourceMarkerAttrs, map, google.maps.Animation.DROP));
+				})
+				// map_.setCenter(paths_[0][0]);
+			}
+
+			function show_current_location() {
+				var loc_promise = get_location_promisified();
+				loc_promise.then(pos => {
+					if (pos!=null) {
+						if (current_loc_marker!=null)
+							current_loc_marker.setMap(null);
+
+						current_location = pos;
+						var currentLocMarkerAttrs = {coords: pos, iconImage: curLocImage};
+
+						current_loc_marker = addMarker(currentLocMarkerAttrs, map);
+						disp('location marker updated');
+						map.setCenter(current_location);
+
+						// setTimeout( () => {show_current_location();}, LOC_UPDATE_INTERVAL);
+						show_current_location();
+					}
+				})
+			}
+
+			function get_location_promisified() {
+				return new Promise( (resolve, reject) => {
+					if (navigator.geolocation) {
+						navigator.geolocation.getCurrentPosition(function(position) {
+							pos = {
+								lat: position.coords.latitude,
+								lng: position.coords.longitude
+							};
+							resolve(pos);
+						}, function(error) {
+							disp(error);
+							resolve(null);
+							// handleLocationError(true, infoWindow, map.getCenter());
+						});
+					} else {
+						// Browser doesn't support Geolocation
+						handleLocationError(false, infoWindow, map.getCenter());
+						console.log("Position not available");
+						resolve(null);
+					}
+				})
+			}
+
+			function disp(a_) {
+				console.log(a_);
+			}
+			/*
+			1) search for destination*/
+			function AutocompleteDirectionsHandler(map) {
+				this.map = map;
+				this.originPlaceId = null;
+				this.originPlaceLatLng= current_location;
+				this.destinationPlaceLatLng= null;
+				this.travelMode = 'DRIVING';
+				// var originInput = document.getElementById('origin-input');
+				var destinationInput = document.getElementById('destination-input');
+				this.directionsService = new google.maps.DirectionsService;
+				this.directionsDisplay = new google.maps.DirectionsRenderer;
+				this.directionsDisplay.setMap(map);
+
+				// var originAutocomplete = new google.maps.places.Autocomplete(					originInput, {placeIdOnly: false});
+
+				var destinationAutocomplete = new google.maps.places.Autocomplete(
+					destinationInput, {placeIdOnly: false});
+
+				// this.setupPlaceChangedListener(originAutocomplete, 'ORIG');
+				this.setupPlaceChangedListener(destinationAutocomplete, 'DEST');
+
+				// this.map.controls[google.maps.ControlPosition.LEFT_TOP].push(originInput);
+				this.map.controls[google.maps.ControlPosition.LEFT_TOP].push(destinationInput);
+			}
+
+			AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function(autocomplete, mode) {
+				var me = this;
+				autocomplete.bindTo('bounds', this.map);
+				autocomplete.addListener('place_changed', function() {
+					var place = autocomplete.getPlace();
+					// var long = place.geometry.location.lng();
+					// var lat = place.geometry.location.lat();
+					// console.log("longitude:", long, "latitude:", lat);
+					if (!place.place_id) {
+						window.alert("Please select an option from the dropdown list.");
+						return;
+					}
+					// if (mode === 'ORIG') {
+					// 	me.originPlaceId = place.place_id;
+					// 	me.originPlaceLatLng = place.geometry.location;
+					// 	console.log("new source", me.originPlaceLatLng);
+					// } else {
+					me.destinationPlaceId = place.place_id;
+					me.destinationPlaceLatLng= place.geometry.location;
+					disp("calling showRoute");
+					me.route();
+					// console.log("new dest", me.destinationPlaceLatLng);
+					// }
+				});
+
+			};
+
+			AutocompleteDirectionsHandler.prototype.route = function() {
+				if (!this.destinationPlaceId) {
+					return;
+				}
+				if (current_location!=null) {
+					disp(current_location);
+					showRoute([[current_location, this.destinationPlaceLatLng]], this.map); this.map.setCenter(current_location);
+				} else {
+					if (!already_warned) {
+						window.alert("Please enable location services.");
+						already_warned = true;
+					}
+					AutocompleteDirectionsHandler.prototype.route();
+				}
+				// var me = this;
+				// showRoute([[this.originPlaceLatLng, this.destinationPlaceLatLng]], this.map); this.map.setCenter(this.originPlaceLatLng);
+			};
+
+			function addMarker(attrs_, map_, animation_) {
+				/*adding a marker
+				attrs is an object of this format:
+				var attrs = {
+					coords: {lat: 11, lng: 22},
+					iconImage: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'
+				}
+				var marker = addMarker(attrs, map);*/
+
+				var newMarker = new google.maps.Marker( {
+					// position: new google.maps.LatLng(lat_, lng_),
+					position: attrs_["coords"],
+					map: map_,
+					icon: attrs_["iconImage"],
+					animation: animation_
+				} );
+
+				if (attrs_["content"]) {
+					var newInfoWindow = new google.maps.InfoWindow({
+						content: attrs_["content"]
+					});
+
+					newInfoWindow.open(map_, newMarker);
+
+					google.maps.event.addListener(newMarker, "click", () => {
+						newInfoWindow.open(map_, newMarker);
+					})
+				}
+
+				newMarker.setMap(map_);
+				return newMarker;
+			}
+
+			/*2) current location and centering the map according to that
+			3)
+			end) navitation/directions for the end
+			*/
+			{
+				// function addLine(coords_, map_) {
+				// 	/*adding a simple line
+				// 	coords_ is in the form of lat1, lng1, lat2, lng2, lat3, lng3 ...
+				// 	sample call:
+
+				// 	var my_home = new google.maps.LatLng(33.782115, -84.406469);
+				// 	addLine([my_home.lat(), my_home.lng(), my_home.lat(), my_home.lng()+0.003, my_home.lat(), my_home.lng()+0.006], map);*/
+
+				// 	objectsArray = [];
+				// 	for (var i = 0; i < coords_.length; i=i+2) {
+				// 		objectsArray.push({lat: coords_[i], lng: coords_[i+1]});
+				// 	}
+
+				// 	var line = new google.maps.Polyline({
+				// 		path: objectsArray,
+				// 		geodesic: true,
+				// 		strokeColor: '#FF0000',
+				// 		strokeOpacity: 1.0,
+				// 		strokeWeight: 2
+				// 	});
+
+				// 	line.setMap(map_);
+				// }
+
+				// markerImage = 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png';
+
+				// var request2 = {
+				// 	origin: dest,
+				// 	destination: dest2,
+				// 	travelMode: google.maps.TravelMode["DRIVING"]
+				// };
+				// directionsService.route(request2, (response, status) => {
+				// 	if (status == 'OK') {
+				// 		var directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true, suppressMarkers: true, polylineOptions: {strokeColor: "blue"} });
+				// 		directionsDisplay.setMap(map);
+				// 		directionsDisplay.setDirections(response);
+				// 	}
+				// });
+
+				// var request = {
+				// 	origin: source,
+				// 	destination: dest,
+				// 	travelMode: google.maps.TravelMode["DRIVING"]
+				// };
+				// directionsService.route(request, (response, status) => {
+				// 	if (status == 'OK') {
+				// 		var directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true, suppressMarkers: true, polylineOptions: {strokeColor: "red"} });
+				// 		directionsDisplay.setMap(map);
+				// 		directionsDisplay.setDirections(response);
+				// 	}
+				// });
+			}
+		</script>
+	</body>
+</html>
