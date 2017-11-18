@@ -54,8 +54,9 @@
 			}
 			#title-class {
 				/*color: black;*/
+				margin-left: 2.5%;
 				width: 100px;
-				height: 100px;
+				height: 80px;
 				/*font-family: "Candara", Times, Helvetica;*/
 				/*position: absolute;*/
 			}
@@ -64,7 +65,6 @@
 	<body>
 		<!-- <text id="status">Origin is not set.</text> -->
 		<!-- <button onclick="sourceAutomatic()">Set origin as your location.</button> -->
-
 		<input id="origin-input" class="controls" type="text"
 			   placeholder="Enter origin if location is not enabled">
 		<input id="destination-input" class="controls" type="text"
@@ -131,7 +131,17 @@
 				var mapOptions = {
 					center: center,
 					zoom: 15,
-					mapTypeId: google.maps.MapTypeId.ROADMAP
+					mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: true,
+                    zoomControlOptions: {
+                        position: google.maps.ControlPosition.RIGHT_BOTTOM,
+						index: -1
+                    },
+                    fullscreenControlOptions: {
+                        position: google.maps.ControlPosition.BOTTOM_RIGHT,
+                    }
 					// 1: World
 					// 5: Landmass/continent
 					// 10: City
@@ -326,6 +336,14 @@
 				this.setupPlaceChangedListener(originAutocomplete, 'ORIG');
 				this.setupPlaceChangedListener(destinationAutocomplete, 'DEST');
 
+                var myTitle = document.createElement('img');
+                myTitle.class = 'title-class';
+                myTitle.src = 'https://image.ibb.co/crj9YG/rsz_logo_padded.png';
+                var myTextDiv = document.createElement('div');
+                myTextDiv.height = "100";
+                myTextDiv.width = "100";
+                myTextDiv.appendChild(myTitle);
+                this.map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(myTextDiv);
 				this.map.controls[google.maps.ControlPosition.LEFT_TOP].push(originInput);
 				this.map.controls[google.maps.ControlPosition.LEFT_TOP].push(destinationInput);
 
@@ -333,14 +351,7 @@
 				// myTitle.class = 'title-class';
 				// myTitle.innerHTML = 'DTOUR';
 
-				var myTitle = document.createElement('img');
-				myTitle.class = 'title-class';
-				myTitle.src = 'https://image.ibb.co/crj9YG/rsz_logo_padded.png';
-				var myTextDiv = document.createElement('div');
-				myTextDiv.height = "100";
-				myTextDiv.width = "100";
-				myTextDiv.appendChild(myTitle);
-				this.map.controls[google.maps.ControlPosition.TOP_CENTER].push(myTextDiv);
+
 			}
 
 			AutocompleteDirectionsHandler.prototype.setupPlaceChangedListener = function(autocomplete, mode) {
