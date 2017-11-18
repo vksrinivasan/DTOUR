@@ -4,8 +4,8 @@ import sys
 from mysql_util import Connector
 
 dirname, _ = os.path.split(os.path.abspath(__file__))
-NODE_FILE_PATH = os.path.join(dirname, 'gps_dict.json')
-ADJ_FILE_PATH = os.path.join(dirname, 'Manhattan_adj_graph.json')
+NODE_FILE_PATH = os.path.join(dirname, 'gps_data_complete.json')
+ADJ_FILE_PATH = os.path.join(dirname, 'Manhattan_adj_graph_complete.json')
 CREDENTIALS_PATH = os.path.join(dirname, '../credentials.txt')
 
 if __name__ == '__main__':
