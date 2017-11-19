@@ -42,7 +42,7 @@ public class GraphDiscretizer {
     }
 
 
-    private List<Node> queryKDTree(double latitude, double longitude, int numNeighbors) {
+    public List<Node> queryKDTree(double latitude, double longitude, int numNeighbors) {
         List<Node> ret;
         try {
             ret = kdTree.nearest(new double[]{latitude, longitude}, numNeighbors);
@@ -50,6 +50,47 @@ public class GraphDiscretizer {
             throw new RuntimeException(e);
         }
         return ret;
+    }
+
+
+    public List<Node> pathToNodes(List<double[]> latLngs) {
+        double currLat = latLngs.get(0)[0];
+        double currLong = latLngs.get(0)[1];
+        Node currNode = queryKDTree(currLat, currLong, 1).get(0);
+        List<Node> nodesPath = new ArrayList<>();
+        nodesPath.add(currNode);
+
+        for (int i = 1; i < latLngs.size(); i++) {
+            double[] nextLatLng = latLngs.get(i);
+            double nextLat = nextLatLng[0];
+            double nextLong = nextLatLng[1];
+
+            while (true) {
+                Map<Integer, Edge> destMap = adjEdgeMap.get(currNode.id);
+                if (destMap == null || destMap.isEmpty()) {
+                    throw new RuntimeException(String.format("[%d, %d] is out of bounds"));
+                }
+
+                Node nextNode = null;
+                double minDist = Math.pow(nextLat - currNode.latitude, 2) + Math.pow(nextLong - currNode.longitude, 2);
+                for (Edge edge : destMap.values()) {
+                    Node destNode = idToNodeMap.get(edge.destNodeId);
+                    double dist = Math.pow(nextLat - destNode.latitude, 2) + Math.pow(nextLong - destNode.longitude, 2);
+                    if (dist < minDist) {
+                        minDist = dist;
+                        nextNode = destNode;
+                    }
+                }
+
+                if (nextNode == null) {
+                    break; //No adjacent node is closer to next point in LatLng path than current node
+                } else {
+                    currNode = nextNode;
+                    nodesPath.add(currNode);
+                }
+            }
+        }
+        return nodesPath;
     }
 
 
@@ -125,6 +166,25 @@ public class GraphDiscretizer {
     public static void main(String[] args) {
         GraphDiscretizer discretizer = new GraphDiscretizer();
         List<Node> neighbors = discretizer.queryKDTree(40.760971, -73.973285, 2);
+
+        List<double[]> path = Arrays.asList(
+                new double[]{40.75856, -73.98501},
+                new double[]{40.75538, -73.97744},
+                new double[]{40.754720000000006, -73.97591000000001},
+                new double[]{40.754650000000005, -73.97568000000001},
+                new double[]{40.75526, -73.97524},
+                new double[]{40.75652, -73.97435},
+                new double[]{40.757760000000005, -73.97342},
+                new double[]{40.7584, -73.97298},
+                new double[]{40.759, -73.97251},
+                new double[]{40.760270000000006, -73.97160000000001},
+                new double[]{40.760760000000005, -73.97276000000001},
+                new double[]{40.76099000000001, -73.97327}
+        );
+        List<Node> nodesPath = discretizer.pathToNodes(path);
+        for (Node node : nodesPath) {
+            System.out.println(node.name);
+        }
         int i = 0;
     }
 }
