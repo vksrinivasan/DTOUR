@@ -20,7 +20,7 @@ public class MySqlDataSource implements DataSource {
 
     @Override
     public void initSource() {
-        connectionParams = loadConnectionParams();
+        connectionParams = ConnectionParams.loadConnectionParams();
 
         Properties props = new Properties();
         props.setProperty("user", connectionParams.user);
@@ -139,26 +139,6 @@ public class MySqlDataSource implements DataSource {
 
     }
 
-    private ConnectionParams loadConnectionParams() {
-        InputStream is = MySqlDataSource.class.getResourceAsStream(CREDENTIALS_FILE);
-        byte[] buffer;
-        ConnectionParams connectionParams;
-        try {
-            buffer = new byte[is.available()];
-            is.read(buffer);
-            connectionParams = new ConnectionParams(buffer);
-        } catch (IOException e) {
-            throw new RuntimeException(String.format("Could not load %s", CREDENTIALS_FILE), e);
-        } finally {
-            try {
-                is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return connectionParams;
-    }
-
     private TreeMap<Integer, Integer> getIntervalToIdMap() {
         TreeMap<Integer, Integer> intervalToIdMap = new TreeMap<>();
         Connection connection = null;
@@ -200,22 +180,6 @@ public class MySqlDataSource implements DataSource {
 //                connectionParams.host, connectionParams.db, connectionParams.user, connectionParams.password);
 //        Connection conn = DriverManager.getConnection(connString);
         return conn;
-    }
-
-    private class ConnectionParams {
-        private final String host;
-        private final String db;
-        private final String user;
-        private final String password;
-
-        private ConnectionParams(byte[] buffer) {
-            String temp = new String(buffer);
-            String[] lines = temp.split("\n");
-            host = lines[0].trim();
-            db = lines[1].trim();
-            user = lines[2].trim();
-            password = lines[3].trim();
-        }
     }
 
 
