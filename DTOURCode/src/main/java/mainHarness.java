@@ -69,6 +69,7 @@ public class mainHarness {
         Collections.sort(rankPaths, new finalRankComparator());
 
         /* Return/Print at most 3 paths */
+        System.out.println("Top Paths:");
         for(int i = 0; i < rankPaths.size() && i < 3; i++) {
             rankPaths.get(i).printPaths();
         }
