@@ -17,7 +17,7 @@ public class PathGraph {
 			 * return -1; if(a.priority == b.priority) return 0; if(a.priority > b.priority)
 			 * return 1; return 0; } });
 			 */
-			children = new MinHeap(100);
+			children = new MinHeap(2000);
 		}
 	}
 
