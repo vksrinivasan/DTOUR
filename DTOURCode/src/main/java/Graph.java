@@ -2,8 +2,8 @@ import java.util.*;
 
 import java.util.*;
 public class Graph {
-    private final HashSet<HeapEdge> vertexes;
-    private final ArrayList<Edge> edges;
+    public final HashSet<HeapEdge> vertexes;
+    public final ArrayList<Edge> edges;
     private HeapEdge startVertex = null;
     public HashMap<HeapEdge, Integer> treeIDLookup;
     

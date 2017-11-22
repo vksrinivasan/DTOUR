@@ -23,6 +23,18 @@ public class DistanceHeuristic implements Heuristic {
         return cost;
     }
 
+    public static double computeDistance(double src_long, double dest_long, double src_lat, double dest_lat) {
+
+        /* Used this source to get equation for distance based on Long/Lat:
+         * http://www.meridianworlddata.com/distance-calculation/
+         */
+        double x = 69.1*(dest_lat - src_lat);
+        double y = 53.0*(dest_long - src_long);
+        double mile_distance = Math.sqrt(((x*x) + (y*y))); // approximate
+
+        return mile_distance;
+    }
+
 //    public double calcCost(double distance) {
 //        return ((maxCost - minCost)*(distance - minMile)/(maxMile - minMile)) + minCost;
 //    }

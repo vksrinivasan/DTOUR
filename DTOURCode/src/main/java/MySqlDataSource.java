@@ -80,6 +80,8 @@ public class MySqlDataSource implements DataSource {
 
             for (EdgeData edgeData : edgeDataMap.values()) {
                 edgeData.weight /= (double) weightSum;
+
+                edgeData.weight = inputAdjustment.probabilityAdjustment(edgeData.weight);
             }
         } catch (SQLException e) {
             throw new RuntimeException("Could not connect to the database", e);
