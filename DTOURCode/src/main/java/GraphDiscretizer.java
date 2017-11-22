@@ -67,8 +67,8 @@ public class GraphDiscretizer {
 
             while (true) {
                 Map<Integer, Edge> destMap = adjEdgeMap.get(currNode.id);
-                if (destMap == null || destMap.isEmpty()) {
-                    throw new RuntimeException(String.format("[%d, %d] is out of bounds"));
+                if (destMap == null) {
+                    destMap = Collections.emptyMap();
                 }
 
                 Node nextNode = null;
@@ -83,6 +83,11 @@ public class GraphDiscretizer {
                 }
 
                 if (nextNode == null) {
+                    Node closestNode = queryKDTree(nextLat, nextLong, 1).get(0);
+                    if (closestNode != currNode) {
+                        currNode = closestNode;
+                        nodesPath.add(currNode);
+                    }
                     break; //No adjacent node is closer to next point in LatLng path than current node
                 } else {
                     currNode = nextNode;
@@ -168,19 +173,56 @@ public class GraphDiscretizer {
         List<Node> neighbors = discretizer.queryKDTree(40.760971, -73.973285, 2);
 
         List<double[]> path = Arrays.asList(
-                new double[]{40.75856, -73.98501},
-                new double[]{40.75538, -73.97744},
-                new double[]{40.754720000000006, -73.97591000000001},
-                new double[]{40.754650000000005, -73.97568000000001},
-                new double[]{40.75526, -73.97524},
-                new double[]{40.75652, -73.97435},
-                new double[]{40.757760000000005, -73.97342},
-                new double[]{40.7584, -73.97298},
-                new double[]{40.759, -73.97251},
-                new double[]{40.760270000000006, -73.97160000000001},
-                new double[]{40.760760000000005, -73.97276000000001},
-                new double[]{40.76099000000001, -73.97327}
+                new double[]{40.751670000000004, -73.97865},
+                new double[]{40.75151, -73.97827000000001},
+                new double[]{40.751430000000006, -73.97831000000001},
+                new double[]{40.75088, -73.97871},
+                new double[]{40.749660000000006, -73.97959},
+                new double[]{40.74902, -73.98005},
+                new double[]{40.748310000000004, -73.98057},
+                new double[]{40.74654, -73.98187},
+                new double[]{40.746390000000005, -73.98195000000001},
+                new double[]{40.745200000000004, -73.98280000000001},
+                new double[]{40.743790000000004, -73.98381},
+                new double[]{40.74212, -73.98504000000001},
+                new double[]{40.740210000000005, -73.98642000000001},
+                new double[]{40.73686, -73.98886},
+                new double[]{40.735290000000006, -73.99003},
+                new double[]{40.73512, -73.99024},
+                new double[]{40.735040000000005, -73.99035},
+                new double[]{40.73487, -73.99067000000001},
+                new double[]{40.73474, -73.99077000000001},
+                new double[]{40.734100000000005, -73.99093},
+                new double[]{40.73328, -73.9911},
+                new double[]{40.73245, -73.99128},
+                new double[]{40.73172, -73.99147},
+                new double[]{40.73058, -73.99242000000001},
+                new double[]{40.73008, -73.99282000000001},
+                new double[]{40.729600000000005, -73.99327000000001},
+                new double[]{40.72843, -73.99426000000001},
+                new double[]{40.72784, -73.99476},
+                new double[]{40.72627000000001, -73.99608},
+                new double[]{40.72549, -73.99673},
+                new double[]{40.72538, -73.99681000000001},
+                new double[]{40.725350000000006, -73.9967},
+                new double[]{40.725170000000006, -73.99598},
+                new double[]{40.72505, -73.99551000000001},
+                new double[]{40.725030000000004, -73.9954}
         );
+//        List<double[]> path = Arrays.asList(
+//                new double[]{40.75856, -73.98501},
+//                new double[]{40.75538, -73.97744},
+//                new double[]{40.754720000000006, -73.97591000000001},
+//                new double[]{40.754650000000005, -73.97568000000001},
+//                new double[]{40.75526, -73.97524},
+//                new double[]{40.75652, -73.97435},
+//                new double[]{40.757760000000005, -73.97342},
+//                new double[]{40.7584, -73.97298},
+//                new double[]{40.759, -73.97251},
+//                new double[]{40.760270000000006, -73.97160000000001},
+//                new double[]{40.760760000000005, -73.97276000000001},
+//                new double[]{40.76099000000001, -73.97327}
+//        );
         List<Node> nodesPath = discretizer.pathToNodes(path);
         for (Node node : nodesPath) {
             System.out.println(node.name);
