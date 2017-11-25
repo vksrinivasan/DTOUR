@@ -1,12 +1,30 @@
-version '1.0-SNAPSHOT'
-
+version = '1.0'
 apply plugin: 'java'
+apply plugin: 'eclipse'
 
 sourceCompatibility = 1.8
 
+targetCompatibility = 1.8
+
+
+task fatJar(type: Jar) {
+	manifest {
+        attributes 'Implementation-Title': 'Dtour', 
+        	'Implementation-Version': version,
+        	'Main-Class': 'main'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+//Get dependencies from Maven central repository
 repositories {
     mavenCentral()
 }
+
+
+
 
 dependencies {
     compile 'mysql:mysql-connector-java:5.1.44'
