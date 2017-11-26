@@ -1,58 +1,23 @@
-/*10.101.96.24*/
-
-express = require('express')
-bodyParser = require('body-parser')
-path = require('path')
-fs = require('fs')
-http = require('http');
-ejs = require('ejs');
+const http = require('http')
+const fs = require('fs')
+const PORT = 3001
+const IP = "0.0.0.0"
 var execute = require('child_process').exec;
 
-// Globals
-PORT = 3000
-PORT = process.env.PORT || 3000; // this line added so port binds to heroku's port
-
-IP = "0.0.0.0"
-app = express()
-static_dir = 'public'
-
-server = http.createServer(app);
-io = require('socket.io').listen(server);
+const server = http.createServer()
 server.listen(PORT, IP, () => {
-	disp('Server started')
+	disp('Backend Server started');
 })
 
-// View Engine
-app.set('view engine', 'ejs')
-app.set('views', path.join(__dirname, 'views'))
+const io = require('socket.io')(server)
 
-// Body Parser middleware
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: false}))
-
-// Set static path
-app.use(express.static(path.join(__dirname, static_dir)))
-
-app.get('*', (req, res) => {
-	if (req.url==='/') {
-		res.send(fs.readFileSync('./views/index6_integrating_same_server.html', 'utf8'))
-	}
-})
-
-
-// backend stuff
-// was given by vyas: 40.7858826 -73.9488283 40.7887087 -73.943873
-/*	testing for:
-	source: 40.785184, -73.953399 (Ossias A Lawrence MD, 1185 Park Ave, New York, NY 10128)
-	destination: 40.7887087 -73.943873 (2000 2nd Ave, New York, NY 10029)
-*/
 io.sockets.on('connection', socket => {
 	socket.on('query', info => {
 		var source = info[0];
 		var destination = info[1];
-		var filepath = "DTOurCode-all-1.0.jar";
+		var filename = "DTOurCode-all-1.0.jar";
 		
-		var to_execute = "java -jar " + filepath + " "
+		var to_execute = "java -jar " + filename + " "
 		// was given by vyas: 40.7858826 -73.9488283 40.7887087 -73.943873
 		/*	testing for:
 			source: 40.785184, -73.953399 (Ossias A Lawrence MD, 1185 Park Ave, New York, NY 10128)
@@ -60,7 +25,7 @@ io.sockets.on('connection', socket => {
 		*/
 		to_execute += source["lat"] + " " + source["lng"] + " "
 		to_execute += destination["lat"] + " " + destination["lng"]
-		// console.log("to_execute", to_execute);
+		console.log("to_execute", to_execute);
 		execute(to_execute, (error, stdout, stderr) => {
 			if (error) {
 				console.log("error while executing the command: ", to_execute, "\n", stderr);
@@ -96,15 +61,15 @@ io.sockets.on('connection', socket => {
 							}
 						}
 						all_paths.push(a_path);
-						// disp(line);
-						// disp(a_path);
+						disp(line);
+						disp(a_path);
 					})
 					if (all_paths.length>=1) {
 						socket.emit("paths", all_paths);
 					} else {
 						socket.emit("paths", []);
 					}
-					// disp(all_paths);
+					disp(all_paths);
 				} catch (err) {
 					socket.emit("paths", []);
 				}
@@ -113,19 +78,38 @@ io.sockets.on('connection', socket => {
 	})
 })
 
-function disp(to_print) {
-	console.log(to_print)
+function disp(a) {
+	console.log(a);
 }
 
-// function readFilePromisified(f_name) {
-// 	return new Promise(
-// 		function (resolve, reject) {
-// 			fs.readFile(f_name, 'utf8', (error, data) => {
-// 				if (error) {
-// 					reject(error);
-// 				} else {
-// 					resolve(data);
-// 				}
-// 			})
-// 		})
-// }
+/*var paths_lines = lines.splice(1, num_lines);
+var all_paths = [];
+paths_lines.forEach(path_line => {
+	var a_path = [];
+	coords = path_line.split(",");
+	for (var i = 0; i < coords.length; i=i+2) {
+		a_path.push({lat: coords[i], lng: coords[i+1]});
+	}
+	all_paths.push(a_path);
+})*/
+
+/*// catch output from stdout, parse it and send to the client
+				disp(stdout);
+				stdout = stdout.trim();
+				var lines = stdout.split(" ");
+				var is_output_correct = true;
+				var num_lines = lines.length;
+				if (num_lines < 1) {
+					is_output_correct = false;
+					disp("num_lines < 1");
+				} else {
+					var num_paths = parseInt(lines[0]);
+					if (num_lines != num_paths + 1) {
+						is_output_correct = false;
+						console.log("num_lines =", num_lines, "num_paths =", num_paths);
+					}
+				}
+				if (!is_output_correct) {
+					// if empty array is being sent, just show the default Google maps path to the user
+					socket.emit("paths", []);
+				} else {*/
