@@ -1,7 +1,4 @@
-Generated graphs go here
-
 Database schema
-
 node
     id - primary key
     name (unique, indexed) - e.g. '1st St & 10th Avenue'
@@ -50,3 +47,17 @@ transition_edge
 
     (transition_graph_id, source_node_id) is indexed
     (transition_graph_id, dest_node_id) is indexed
+	
+	
+Directory structure.
+--graph_generation: Code used to generate graphs from NYC taxi dataset and store them in MySQL
+  --create_graph_schema.sql: Schema structure of database.
+  --generate_graphs.sh: Glue script that generates calls adjacency graph generation if necessary, then transition graph generation on different month datasets.
+  --adjacency: Code used to generate nodes (street intersections) and adjacency edges
+    --Manhattan_Adjacency_graph-Final.ipynb: Generates json file that includes street intersections and their adjacencies
+    --generate_adj_graph.py: Reads above generated json file and writes it to database
+  --transition: Code used to generate transition graphs
+    --quantization.py: Code that matches any given GPS coordinate to nearest node.
+    --generate_transition_graph.py: Uses PySpark to read taxi data csv files and create transition graphs from them, which it writes to database.
+    --graph_aggregation.py: Given transition graphs for different months that are stored in database, aggregates them.
+  --mysql_util.py: Code to connect to server.
