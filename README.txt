@@ -5,6 +5,8 @@ DESCRIPTION
 
 The main code of this project is organized as follows:
 
+--web/: This folder contains all the code for the frontend. You can find usage instructions in the INSTALLATION section below.
+
 --graph_generation: Code used to generate graphs from NYC taxi dataset and store them in MySQL
 ----create_graph_schema.sql: Schema structure of database.
 ----generate_graphs.sh: Glue script that generates calls adjacency graph generation if necessary, then transition graph generation on different month datasets.
