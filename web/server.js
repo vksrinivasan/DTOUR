@@ -35,7 +35,7 @@ app.use(express.static(path.join(__dirname, static_dir)))
 
 app.get('*', (req, res) => {
 	if (req.url==='/') {
-		res.send(fs.readFileSync('./views/index6_integrating_same_server.html', 'utf8'))
+		res.send(fs.readFileSync('./views/index7_popup.html', 'utf8'))
 	}
 })
 
@@ -60,7 +60,7 @@ io.sockets.on('connection', socket => {
 		*/
 		to_execute += source["lat"] + " " + source["lng"] + " "
 		to_execute += destination["lat"] + " " + destination["lng"]
-		// console.log("to_execute", to_execute);
+		console.log("to_execute", to_execute);
 		execute(to_execute, (error, stdout, stderr) => {
 			if (error) {
 				console.log("error while executing the command: ", to_execute, "\n", stderr);

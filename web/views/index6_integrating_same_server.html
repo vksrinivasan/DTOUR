@@ -123,7 +123,8 @@
 				ny_center = new google.maps.LatLng(40.730610, -73.935242);
 				my_home = new google.maps.LatLng(33.782115, -84.406469);
 
-				center = new google.maps.LatLng(33.778423, -84.401361);
+				// center = new google.maps.LatLng(33.778423, -84.401361);
+				center = new google.maps.LatLng(40.781358, -73.966172);
 				/*mid1 = new google.maps.LatLng(33.781437, -84.386941);
 				mid2 = new google.maps.LatLng(33.771295, -84.395013)
 				dest = new google.maps.LatLng(33.772245, -84.384906);*/
@@ -162,7 +163,7 @@
 
 				// backend_server = io('http://' + backend_ip + ':' + backend_port);
 				backend_server.on('connect', () => {
-					disp("Connected with the backend server");
+					disp("Connected with the backend server yo");
 					// backend_server.emit("hw", "hello world");
 				});
 
@@ -265,12 +266,13 @@
 							strokeWeight : 5,
 							scale: 2.5
 						}
-
+						
+						/* TODO: uncommented in final version
 						if (first_time) {
 							first_time = false;
 							// map.setCenter(current_location);
 							map.panTo(current_location);
-						}
+						}*/
 						
 						/* TODO: uncommented in final version
 						if (route_shown) {
