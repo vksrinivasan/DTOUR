@@ -42,7 +42,8 @@ Frontend:
 	
 Backend:
 	The backend is coupled in a jar file that the frontend uses to compute paths. Behind the scenes, the jar file contacts the database hosted on Azure for graph computations. Other details are as follows:
-
+	This jar file is also in 'web/DTOurCode-all-1.0.jar'
+	
 Graph Generation:
 	MySQL Server-side Installation - In order to run MySQL server
 		1) Install mysql server:
