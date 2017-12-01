@@ -1,18 +1,21 @@
 DTOUR
 Path Optimization for Destination-Oriented Rideshare Drivers
 
-DESCRIPTION
+DESCRIPTION:
 
 The main code of this project is organized as follows:
 
---web/: This folder contains all the code for the frontend. You can find usage instructions in the INSTALLATION section below.
+--web/:
+	This folder contains all the code for the frontend. You can find usage instructions in the INSTALLATION section below.
 
---graph_generation: Code used to generate graphs from NYC taxi dataset and store them in MySQL
-  --README.txt: Description of database schema and further details of each file.
-  --adjacency/: Code used to generate nodes (street intersections) and adjacency edges
-  --transition/: Code used to generate transition graphs and edges
+--graph_generation/:
+	Code used to generate graphs from NYC taxi dataset and store them in MySQL
+  	--README.txt: Description of database schema and further details of each file.
+ 	--adjacency/: Code used to generate nodes (street intersections) and adjacency edges
+ 	--transition/: Code used to generate transition graphs and edges
 
---DTOURCode/: Backend code; given a start and end coordinate, returns list of best paths to take.
+--DTOURCode/: 
+	Backend code; given a start and end coordinate, returns list of best paths to take.
 	The front-end calls the "main" class in the DTOUR jar with latitudes and longitudes.
 	The "main" class calls the "mainHarness" class where the we run the K-Star Algorithm. 
 	This consists of calls to the "AStar" class to run A* until the destination node is explored. 
@@ -22,7 +25,8 @@ The main code of this project is organized as follows:
 	'Graphdigitizer' class is used to convert latitudes and longitudes into node numbers.
 	'MySQLdatasorce' is used to connection to MySQL database.
 
---Experiments/: Code used to run the trip simulation experiments.
+--Experiments/: 
+	Code used to run the trip simulation experiments.
 
 
 INSTALLATION:
