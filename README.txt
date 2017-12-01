@@ -77,3 +77,16 @@ Examples are provided as 'credentials_example.txt' in the same directories.
 
 Graph generation
 Run generate_graphs.sh to add adjacency edges and add transition_graphs for months betweeen Jan 2014 and Dec 2015 (Will take a while).
+Description:
+The front-end calls the "main" class in the DTOUR jar with latitudes and longitudes.
+The "main" class calls the "mainHarness" class where the we run the K-Star Algorithm. 
+This consists of calls to the "AStar" class to run A* until the destination node is explored. 
+Then the code creates the connected path graph using side-track edge heaps by way of the 
+"TreeHeap" class's "createHtCollection" method. 
+Finally Dijkstra's algorithm is run on the path graph by way of the "DijkstraAlgorithm" class.
+Paths output by Dijkstra's are returned to the front end.  
+
+Graphdigitizer class is used to convert latitudes and longitudes into node numbers.
+MySQLdatasorce is used to connection to MySQL database.
+
+
