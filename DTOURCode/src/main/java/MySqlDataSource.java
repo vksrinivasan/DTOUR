@@ -11,7 +11,8 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 public class MySqlDataSource implements DataSource {
     private static final String CREDENTIALS_FILE = "credentials.txt";
     // Change the following value to get different transition graphs;
-    private static final String TRANSITION_GROUP_NAME = "yellow_tripdata_2014-01";
+    private static final String TRANSITION_GROUP_NAME = "yellow_tripdata_aggregated";
+//    private static final String TRANSITION_GROUP_NAME = "yellow_tripdata_2014-01";
     private static final int GRAPH_INTERVAL = 60; //interval between graphs
 
     private ConnectionParams connectionParams;
