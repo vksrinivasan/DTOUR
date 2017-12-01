@@ -18,7 +18,14 @@ The main code of this project is organized as follows:
 ------graph_aggregation.py: Given transition graphs for different months that are stored in database, aggregates them.
 
 
-INSTALLATION
+INSTALLATION:
+There are two portions of our application: frontend and backend.
+Frontend:
+	The frontend is hosted at https://dva1-alhaamid.c9users.io/.
+Backend:
+	The backend is coupled in a jar file that the frontend uses to compute paths. Behind the scenes, the jar file contacts the database hosted on Azure for graph computations.
+
+
 
 MySQL Servere-side Installation - In order to run MySQL server
 1. Install mysql server:
