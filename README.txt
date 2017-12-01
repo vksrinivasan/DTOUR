@@ -17,6 +17,9 @@ The main code of this project is organized as follows:
 	
 --Experiments/: 
 	Code used to run the trip simulation experiments.
+	
+--data/:
+	Our scripts download the New York City Taxi datasets and save them in this directory.
 
 --graph_generation/:
 	Code used to generate graphs from NYC taxi dataset and store them in MySQL
