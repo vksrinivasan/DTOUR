@@ -28,7 +28,7 @@ transition_period
     month - month that this corresponds to
     year - year that data corresponds to
     taxi_type - e.g. 'yellow', 'green'
-
+	weight - weight assigned to transition graph edges of this transition_period.
     unique on (transition_group_id, month, year, taxi_type)
 
 
