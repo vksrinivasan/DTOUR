@@ -53,6 +53,8 @@ Directory structure.
 --graph_generation: Code used to generate graphs from NYC taxi dataset and store them in MySQL
   --create_graph_schema.sql: Schema structure of database.
   --generate_graphs.sh: Glue script that generates calls adjacency graph generation if necessary, then transition graph generation on different month datasets.
+	  Once you have the database, user, and 'credentials.txt' file setup, you should be able to simply run this file to generate adjacency and transition graphs.
+	  Note that this does take a long while though. If you are running on an AWS EMR cluster, add the '-c' to use YARN cluster management.
   --adjacency: Code used to generate nodes (street intersections) and adjacency edges
     --Manhattan_Adjacency_graph-Final.ipynb: Generates json file that includes street intersections and their adjacencies
     --generate_adj_graph.py: Reads above generated json file and writes it to database
