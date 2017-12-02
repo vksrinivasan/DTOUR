@@ -38,14 +38,17 @@ Frontend:
 		2)  Java 1.8 installed
 		3)  hosted on a HTTPS server
 
-	The frontend is hosted at "https://dva1-alhaamid.c9users.io/" until 31st Dec. Note that for testing purposes only, we disabled the current location feature in the demo web app at this url since one can not test the application for New York city while the map is centered in Atlanta.
+	The frontend is hosted at "https://dva1-alhaamid.c9users.io/" until 31st Dec. As this is a mobile application, the interface is primarly built for mobile devices.
  
 	Our frontend needs HTTPS and Java 1.8 for location settings so its hosted on Cloud9. If you wish to serve it on your own Node.js workspace on Cloud9, follow these instructions:
-		1)	Copy the web/ folder in your workspace on Cloud9.
-		2)	In the web/ folder, run this command to install all the dependencies: "npm install"
-		3)	In the web/ folder, run this command: "node server.js"
-		4)	To access the frontend, go to this url: https://<your_workspace_name>-<your_cloud9_username>.c9users.io/
-	
+		1)	Create an account on Cloud9 with a username, say "polo"
+		2)	Create a Node.js workspace with a name, say "dtour"
+		3)	Delete all previous contents in the dtour folder and then copy all the contents of the web/ folder in the dtour folder. (don't copy the web/ folder itself, only all the contents inside it).
+		4)	Now in the bash terminal, run this command: "curl -sL https://gist.githubusercontent.com/naxmefy/c9b49d10de6827a336f81e6cbcccabe3/raw/16b84294f32c151c3f4951602b736898f036af7f/c9-java8.sh | sudo bash - && npm install && node server.js". This command will download and install Java 1.8, all the dependencies of our application and then run the frontend.
+		5)	To access the frontend, from your mobile device go to this url: "https://dtour-polo.c9users.io/". Sign in with your Cloud9 account if required.
+
+	NOTE: For testing purposes ONLY, we have disabled the current location feature in the demo web app at this url since one cannot test the application for New York city while the map is centered at the tester's location in Atlanta. The code however that we have submitted does not have this feature disabled. We have tested its functionality though. If you still wish to test it, please follow the instructions above to install the front end. :)
+
 Backend:
 	The backend is coupled in a jar file that the frontend uses to compute paths. Behind the scenes, the jar file contacts the database hosted on Azure for graph computations. Other details are as follows:
 	This jar file is also in 'web/DTOurCode-all-1.0.jar'
