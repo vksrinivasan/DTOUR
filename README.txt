@@ -50,13 +50,13 @@ Backend:
 	The backend is coupled in a jar file that the frontend uses to compute paths. Behind the scenes, the jar file contacts the database hosted on Azure for graph computations. Other details are as follows:
 	This jar file is also in 'web/DTOurCode-all-1.0.jar'
 Jar Creation:
-Jar consists of all the classes in DTour package and the following dependencies
-  'mysql:mysql-connector-java:5.1.44'
-  'org.apache.commons:commons-dbcp2:2.1.1'
-  'org.apache.commons:commons-pool:2.4.3'
-  'de.biomedical-imaging.edu.wlu.cs.levy.cg:kdtree:1.0.3'
-  
-  Java Source and target compatibility-1.8
+	Jar consists of all the classes in DTour package and the following dependencies
+		  'mysql:mysql-connector-java:5.1.44'
+		  'org.apache.commons:commons-dbcp2:2.1.1'
+		  'org.apache.commons:commons-pool:2.4.3'
+		  'de.biomedical-imaging.edu.wlu.cs.levy.cg:kdtree:1.0.3'
+
+	Java Source and target compatibility-1.8
   
   Steps To create Jar-
   		 1)  Install Gradle
