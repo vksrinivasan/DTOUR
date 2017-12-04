@@ -106,4 +106,4 @@ Graph Generation:
 
 	
 EXECUTION: 
-	You can access the frontend of our application at "https://dva1-alhaamid.c9users.io/"
+	You can access the frontend of our application at "https://dva1-alhaamid.c9users.io/". If you have followed the installation instructions and have a web server of your own running that has the packaged backend jar file on it, you should be able to go to the similar page on your server. 
