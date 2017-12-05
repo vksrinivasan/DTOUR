@@ -39,14 +39,14 @@ The main code of this project is organized as follows:
 
 INSTALLATION:
 Frontend:
+	The frontend is hosted at "https://dva1-alhaamid.c9users.io/" until 31st Dec 2017. Our frontend needs HTTPS and Java 1.8 for location settings so its hosted on Cloud9. 
+	
 	The front end has the following requirements:
 		1)  Node.js(version 8.9.1 or above) installed
 		2)  Java 1.8 installed
 		3)  hosted on a HTTPS server
 
-	The frontend is hosted at "https://dva1-alhaamid.c9users.io/" until 31st Dec.
- 
-	Our frontend needs HTTPS and Java 1.8 for location settings so its hosted on Cloud9. If you wish to serve it on your own Node.js workspace on Cloud9, follow these instructions:	
+	If you wish to serve it on your own Node.js workspace on Cloud9, follow these instructions:	
 		1)	Create an account on Cloud9 with a username, say "polo"
 		2)	Create a Node.js workspace with a name, say "dtour"
 		3)	Delete all previous contents in the dtour folder and then copy all the contents of the web/ folder in the dtour folder. (don't copy the web/ folder itself, only all the contents inside it).
