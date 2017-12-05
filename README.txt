@@ -44,14 +44,9 @@ Frontend:
 		2)  Java 1.8 installed
 		3)  hosted on a HTTPS server
 
-	The frontend is hosted at "https://dva1-alhaamid.c9users.io/" until 31st Dec. Note that for testing purposes only, we disabled the current location feature in the demo web app at this url since one can not test the application for New York city while the map is centered in Atlanta.
+	The frontend is hosted at "https://dva1-alhaamid.c9users.io/" until 31st Dec.
  
-	Our frontend needs HTTPS and Java 1.8 for location settings so its hosted on Cloud9. If you wish to serve it on your own Node.js workspace on Cloud9, follow these instructions:
-		1)	Copy the web/ folder in your workspace on Cloud9.
-		2)	In the web/ folder, run this command to install all the dependencies: "npm install"
-		3)	In the web/ folder, run this command: "node server.js"
-		4)	To access the frontend, go to this url: https://<your_workspace_name>-<your_cloud9_username>.c9users.io/
-	
+	Our frontend needs HTTPS and Java 1.8 for location settings so its hosted on Cloud9. If you wish to serve it on your own Node.js workspace on Cloud9, follow these instructions:	
 		1)	Create an account on Cloud9 with a username, say "polo"
 		2)	Create a Node.js workspace with a name, say "dtour"
 		3)	Delete all previous contents in the dtour folder and then copy all the contents of the web/ folder in the dtour folder. (don't copy the web/ folder itself, only all the contents inside it).
